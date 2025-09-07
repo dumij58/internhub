@@ -5,15 +5,13 @@ ob_start();
 // Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
-
-    // Only for development purposes
-        //$_SESSION['username'] = 'student';
-        //$_SESSION['role'] = 'student';
-        //$_SESSION['username'] = 'company';
-        //$_SESSION['role'] = 'company';
-        //$_SESSION['username'] = 'admin';
-        //$_SESSION['role'] = 'admin';
 }
+
+// Define paths - Auto-detect if not set via environment
+$root_path = detectPathPrefix();
+$pages_path = $root_path . '/pages';
+$assets_path = $root_path . '/assets';
+$includes_path = $root_path . '/includes';
 
 // Database Configuration
 define('DB_HOST', 'localhost');
@@ -23,7 +21,7 @@ define('DB_PASS', ''); // Change this to your MySQL password
 
 // Application Settings
 define('SITE_NAME', 'Internship Application & Tracking System');
-define('SITE_URL', 'http://localhost/internship_tracker/'); // Update this to your actual URL
+define('SITE_URL', 'http://localhost' . $root_path . '/');
 // define('UPLOAD_DIR', __DIR__ . '/uploads/'); // Directory for file uploads
 // define('MAX_FILE_SIZE', 5 * 1024 * 1024); // 5MB max file size
 
@@ -37,11 +35,23 @@ date_default_timezone_set('Asia/Colombo'); // Adjust to your timezone
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Define paths
-$root_path = isset($_ENV['PATH_PREFIX']) ? $_ENV['PATH_PREFIX'] : '/internship-tracker';
-$pages_path = $root_path . '/pages';
-$assets_path = $root_path . '/assets';
-$includes_path = $root_path . '/includes';
+/**
+ * Auto-detect the path prefix based on the current script location
+ * This provides a fallback when PATH_PREFIX is not set
+ */
+function detectPathPrefix() {
+    // Get the document root and current script directory
+    $documentRoot = $_SERVER['DOCUMENT_ROOT'];
+    $currentDir = dirname(dirname(__FILE__)); // Go up from includes/ to project root
+    
+    // Calculate the relative path from document root to project root
+    $relativePath = str_replace($documentRoot, '', $currentDir);
+    
+    // Ensure it starts with / and doesn't end with /
+    $relativePath = '/' . trim($relativePath, '/');
+    
+    return $relativePath === '/' ? '' : $relativePath;
+}
 
 /**
  * Database Connection Function
