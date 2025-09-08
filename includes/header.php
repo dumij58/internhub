@@ -47,6 +47,11 @@ global $root_path, $pages_path, $assets_path;
                                 <a href="<?php echo $pages_path; ?>/functionalities.php">Functionalities</a>
                                 <a href="<?php echo $pages_path; ?>/help.php">Help</a>
                             <?php endif; ?>
+                        <?php else: ?>
+                            <a href="<?php echo $root_path; ?>/index.php">Home</a>
+                            <a href="<?php echo $pages_path; ?>/functionalities.php">Functionalities</a>
+                            <a href="<?php echo $pages_path; ?>/help.php">Help</a>
+                            <a href="<?php echo $pages_path; ?>/about.php">About Us</a>
                         <?php endif; ?>
                     </div>
                     <div class="nav-user nav-links dropdown">
