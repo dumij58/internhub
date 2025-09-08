@@ -1,21 +1,19 @@
 <?php
 require_once '../../includes/config.php';
-
-// --- Page-specific variables ---
-$page_title = 'Company Profile';
-global $pages_path;
-
-if (isLoggedIn()) {
-    $role =  $_SESSION['role'];
-    if ($role !== 'company') {
-        logActivity('Unauthorized Access Attempt', 'User changed the url from "' . $role . '" to "company".');
-        header('Location: ' . $pages_path . '/error.php' . '?error_message=401-Unauthorized');
-        exit;
-    }
+requireLogin();
+$role =  $_SESSION['role'];
+if ($role !== 'company') {
+    logActivity('Unauthorized Access Attempt', 'User changed the url from "' . $role . '" to "company".');
+    http_response_code(401);
+    exit;
 }
 
+// --- Page-specific variables ---
 $db = getDB();
 $user_id = $_SESSION['user_id'];
+$company_name = $_SESSION['company_name'] ?? 'Company';
+$page_title = $company_name . ' Dashboard';
+global $pages_path;
 
 // Fetch company profile data
 $profile_query = "SELECT cp.*, u.username, u.email 

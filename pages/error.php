@@ -1,14 +1,27 @@
 <?php
 require_once '../includes/config.php';
 $page_title = 'Error';
+$error_message = isset($_GET['error_message']) ? $_GET['error_message'] : 'Unknown';
 require_once '../includes/header.php';
 ?>
+<style>
+    body {
+        text-align: center;
+        background-color: #f8f9fa;
+        color: #333;
+    }
+</style>
 
 <h1><?php echo 'Error ' . escape($error_message); ?></h1>
-<br>
-<?php
-    echo '<a href="/internship_tracker/login.php" class="button">Return to Login</a>';
-?>
+<br />
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" fill="currentColor" class="bi bi-x-octagon" viewBox="0 0 16 16">
+  <path d="M4.54.146A.5.5 0 0 1 4.893 0h6.214a.5.5 0 0 1 .353.146l4.394 4.394a.5.5 0 0 1 .146.353v6.214a.5.5 0 0 1-.146.353l-4.394 4.394a.5.5 0 0 1-.353.146H4.893a.5.5 0 0 1-.353-.146L.146 11.46A.5.5 0 0 1 0 11.107V4.893a.5.5 0 0 1 .146-.353zM5.1 1 1 5.1v5.8L5.1 15h5.8l4.1-4.1V5.1L10.9 1z"/>
+  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+</svg>
+<br />
+<br />
+
+<a href="<?php echo $pages_path; ?>/auth/login.php" class="button">Return to Login</a>
 
 <?php
 require_once '../includes/footer.php';

@@ -139,12 +139,13 @@ internship-tracker/
       LoginPage_README.md # Login system documentation
 
     company/               # Company pages
-      index.php           # Company dashboard (partial)
-      profile.php         # Company profile 
-      (partial)
+      index.php           # Company dashboard (redirects to dashboard.php)
+      dashboard.php       # Company dashboard (main control center)
       post_internship.php # Post internship (planned)
       manage_internships.php # Manage internships (planned)
       view_applications.php # View applications (planned)
+      update_profile.php  # Handle profile updates
+      change_password.php # Handle password changes
     
     student/               # Student pages
       index.php           # Student dashboard (partial)
