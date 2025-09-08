@@ -2,6 +2,13 @@
 include_once '../includes/header.php';
 ?>
 
+<style>
+    body {
+        background: url('<?php echo $assets_path; ?>/images/help.jpg') no-repeat center center fixed;
+        background-size: cover;
+    }
+</style>
+
 <div class="help-container">
     <div class="help-section">
         <p class="welcome-text">Welcome to <span class="brand-name">InternHub</span>!</p>
