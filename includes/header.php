@@ -34,7 +34,7 @@ global $root_path, $pages_path, $assets_path;
                                 <a href="<?php echo $pages_path; ?>/student/my_applications.php">My Applications</a>
                             <?php elseif ($_SESSION['role'] === 'company'): ?>
                                 <!-- Company Navigation -->
-                                <a href="<?php echo $pages_path; ?>/company/profile.php">Company Profile</a>
+                                <a href="<?php echo $pages_path; ?>/company/dashboard.php">Company Dashboard</a>
                                 <a href="<?php echo $pages_path; ?>/company/post_internship.php">Post Internships</a>
                                 <a href="<?php echo $pages_path; ?>/company/view_applications.php">Received Applications</a>
                             <?php elseif ($_SESSION['role'] === 'admin'): ?>
