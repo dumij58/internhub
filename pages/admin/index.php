@@ -32,25 +32,25 @@ require_once '../../includes/header.php';
         </div>
         <div class="analytics-container">
             <div class="dash-overview-grid">
-                <div class="stat-card">
+                <div class="stat-card analytics">
                     <h3>Students</h3>
                     <div class="stat-number"><?php echo number_format($totalStudents); ?></div>
                     <div class="stat-label"><?php echo $totalUsers > 0 ? round(($totalStudents/$totalUsers)*100, 1) : 0; ?>% of total users</div>
                 </div>
                 
-                <div class="stat-card">
+                <div class="stat-card analytics">
                     <h3>Companies</h3>
                     <div class="stat-number"><?php echo number_format($totalCompanies); ?></div>
                     <div class="stat-label"><?php echo $verifiedCompanies; ?> verified</div>
                 </div>
                 
-                <div class="stat-card">
+                <div class="stat-card analytics">
                     <h3>Internships</h3>
                     <div class="stat-number"><?php echo number_format($totalInternships); ?></div>
                     <div class="stat-label"><?php echo $activeInternships; ?> currently active</div>
                 </div>
                 
-                <div class="stat-card">
+                <div class="stat-card analytics">
                     <h3>Applications</h3>
                     <div class="stat-number"><?php echo number_format($totalApplications); ?></div>
                     <div class="stat-label"><?php echo $acceptedApplications; ?> accepted</div>
