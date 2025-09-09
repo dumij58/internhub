@@ -9,7 +9,7 @@
  * - Sample internships, applications, notifications, and system logs
  * 
  * This will preserve:
- * - Default system users (admin, uoc, company)
+ * - Default system users (admin, uoc, company) and their profiles
  * - Any manually created legitimate data
  */
 
@@ -28,21 +28,21 @@ try {
     echo "<h2>Starting Sample Data Removal...</h2>\n";
     
     // Check if there's sample data to remove
-    $checkStmt = $db->prepare("SELECT COUNT(*) FROM users WHERE username LIKE 'student%' OR username LIKE 'company%'");
+    $checkStmt = $db->prepare("SELECT COUNT(*) FROM users WHERE username LIKE 'student___' OR username LIKE 'company___'");
     $checkStmt->execute();
     $sampleCount = $checkStmt->fetchColumn();
     
     if ($sampleCount == 0) {
         echo "<p style='color: orange;'>⚠️ No sample data found to remove.</p>\n";
         $db->rollback();
-        echo "<p><a href='seed-default-users.php'>Create Default Users</a></p>\n";
         echo "<p><a href='seed-sample-data.php'>Create Sample Data</a></p>\n";
+        echo "<p><a href='../../pages/admin/'>Go to Admin Dashboard</a></p>\n";
         return;
     }
     
-    // Get sample user IDs (users with student### or company### usernames)
+    // Get sample user IDs (users with student### or company### usernames - 3 digits)
     $sampleUserIds = [];
-    $stmt = $db->query("SELECT user_id FROM users WHERE username LIKE 'student%' OR username LIKE 'company%'");
+    $stmt = $db->query("SELECT user_id FROM users WHERE username REGEXP '^student[0-9]{3}$' OR username REGEXP '^company[0-9]{3}$'");
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $sampleUserIds[] = $row['user_id'];
     }
@@ -52,6 +52,17 @@ try {
         $db->rollback();
         return;
     }
+    
+    // Show which users will be preserved
+    echo "<p><strong>Default users that will be preserved:</strong></p>\n";
+    $defaultUsers = $db->query("SELECT username, email FROM users WHERE username IN ('admin', 'uoc', 'company')")->fetchAll(PDO::FETCH_ASSOC);
+    echo "<ul>\n";
+    foreach ($defaultUsers as $user) {
+        echo "<li>{$user['username']} ({$user['email']})</li>\n";
+    }
+    echo "</ul>\n";
+    
+    echo "<p><strong>Sample users to be removed:</strong> " . count($sampleUserIds) . " users</p>\n";
     
     $sampleUserIdsList = implode(',', $sampleUserIds);
     
