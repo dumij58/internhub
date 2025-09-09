@@ -361,8 +361,7 @@ form p a {
 /* ============================ */
 
 .admin-panel {
-    width: 90%;
-    max-width: 1200px;
+    width: 100%;
     height: fit-content;
     display: flex;
     flex-direction: column;
@@ -370,8 +369,7 @@ form p a {
 }
 
 .admin-analytics {
-    width: 90%;
-    max-width: 1200px;
+    width: 100%;
     margin: 0 auto;
     height: fit-content;
     display: flex;
@@ -1297,7 +1295,8 @@ summary.highlight {
         grid-template-columns: 1fr;
     }
     
-    .dash-overview-grid {
+    .dash-overview-grid,
+    .analytics-overview-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 15px;
     }
@@ -1320,7 +1319,8 @@ summary.highlight {
         gap: 10px;
     }
     
-    .dash-overview-grid {
+    .dash-overview-grid,
+    .analytics-overview-grid {
         grid-template-columns: 1fr;
         gap: 10px;
     }
