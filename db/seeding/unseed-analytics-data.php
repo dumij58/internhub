@@ -3,6 +3,14 @@
  * Sample Data Removal Script
  * This script removes all sample data generated for analytics testing
  * Run this script to clean up the database after testing
+ * 
+ * This will remove:
+ * - Sample student and company users (keeping default system users)
+ * - Sample internships, applications, notifications, and system logs
+ * 
+ * This will preserve:
+ * - Default system users (admin, uoc, codalyth)
+ * - Any manually created legitimate data
  */
 
 require_once '../../includes/config.php';
@@ -19,23 +27,48 @@ try {
     
     echo "<h2>Starting Sample Data Removal...</h2>\n";
     
-    // Get the original user IDs to preserve (admin, original student, original company)
-    $originalUserIds = [1, 2, 3]; // Based on the schema.sql default users
+    // Check if there's sample data to remove
+    $checkStmt = $db->prepare("SELECT COUNT(*) FROM users WHERE username LIKE 'student%' OR username LIKE 'company%'");
+    $checkStmt->execute();
+    $sampleCount = $checkStmt->fetchColumn();
+    
+    if ($sampleCount == 0) {
+        echo "<p style='color: orange;'>⚠️ No sample data found to remove.</p>\n";
+        $db->rollback();
+        echo "<p><a href='seed-default-users.php'>Create Default Users</a></p>\n";
+        echo "<p><a href='seed-sample-data.php'>Create Sample Data</a></p>\n";
+        return;
+    }
+    
+    // Get sample user IDs (users with student### or company### usernames)
+    $sampleUserIds = [];
+    $stmt = $db->query("SELECT user_id FROM users WHERE username LIKE 'student%' OR username LIKE 'company%'");
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $sampleUserIds[] = $row['user_id'];
+    }
+    
+    if (empty($sampleUserIds)) {
+        echo "<p>No sample users found.</p>\n";
+        $db->rollback();
+        return;
+    }
+    
+    $sampleUserIdsList = implode(',', $sampleUserIds);
     
     // 1. Remove notifications for sample users
     echo "<p>Removing sample notifications...</p>\n";
     $stmt = $db->prepare("
         DELETE FROM notifications 
-        WHERE user_id NOT IN (" . implode(',', $originalUserIds) . ")
+        WHERE user_id IN ({$sampleUserIdsList})
     ");
     $stmt->execute();
     $deletedNotifications = $stmt->rowCount();
     
-    // 2. Remove system logs for sample users (keep admin logs)
+    // 2. Remove system logs for sample users
     echo "<p>Removing sample system logs...</p>\n";
     $stmt = $db->prepare("
         DELETE FROM system_logs 
-        WHERE user_id NOT IN (1) OR created_at > '2025-09-01 00:00:00'
+        WHERE user_id IN ({$sampleUserIdsList})
     ");
     $stmt->execute();
     $deletedLogs = $stmt->rowCount();
@@ -44,7 +77,7 @@ try {
     echo "<p>Removing sample applications...</p>\n";
     $stmt = $db->prepare("
         DELETE FROM applications 
-        WHERE student_id NOT IN (" . implode(',', $originalUserIds) . ")
+        WHERE student_id IN ({$sampleUserIdsList})
     ");
     $stmt->execute();
     $deletedApplications = $stmt->rowCount();
@@ -53,7 +86,7 @@ try {
     echo "<p>Removing sample internships...</p>\n";
     $stmt = $db->prepare("
         DELETE FROM internships 
-        WHERE created_by NOT IN (" . implode(',', $originalUserIds) . ")
+        WHERE created_by IN ({$sampleUserIdsList})
     ");
     $stmt->execute();
     $deletedInternships = $stmt->rowCount();
@@ -62,43 +95,40 @@ try {
     echo "<p>Removing sample company profiles...</p>\n";
     $stmt = $db->prepare("
         DELETE FROM company_profiles 
-        WHERE user_id NOT IN (" . implode(',', $originalUserIds) . ")
+        WHERE user_id IN ({$sampleUserIdsList})
     ");
     $stmt->execute();
     $deletedCompanyProfiles = $stmt->rowCount();
     
-    // 6. Remove sample student profiles (except the original one)
+    // 6. Remove sample student profiles
     echo "<p>Removing sample student profiles...</p>\n";
     $stmt = $db->prepare("
         DELETE FROM student_profiles 
-        WHERE user_id NOT IN (" . implode(',', $originalUserIds) . ")
+        WHERE user_id IN ({$sampleUserIdsList})
     ");
     $stmt->execute();
     $deletedStudentProfiles = $stmt->rowCount();
     
-    // 7. Remove sample users (except the original admin, student, company)
+    // 7. Remove sample users
     echo "<p>Removing sample users...</p>\n";
     $stmt = $db->prepare("
         DELETE FROM users 
-        WHERE user_id NOT IN (" . implode(',', $originalUserIds) . ")
+        WHERE user_id IN ({$sampleUserIdsList})
     ");
     $stmt->execute();
     $deletedUsers = $stmt->rowCount();
     
-    // 8. Reset AUTO_INCREMENT values to clean state
-    echo "<p>Resetting AUTO_INCREMENT values...</p>\n";
-    $tables = [
-        'users' => 4,
-        'student_profiles' => 2,
-        'company_profiles' => 1,
-        'internships' => 1,
-        'applications' => 1,
-        'system_logs' => 1,
-        'notifications' => 1
-    ];
+    // 8. Reset AUTO_INCREMENT values (optional, only if tables are empty)
+    echo "<p>Checking AUTO_INCREMENT reset...</p>\n";
     
-    foreach ($tables as $table => $nextId) {
-        $db->exec("ALTER TABLE {$table} AUTO_INCREMENT = {$nextId}");
+    // Only reset if no data remains in critical tables
+    $userCount = $db->query("SELECT COUNT(*) FROM users")->fetchColumn();
+    if ($userCount <= 3) { // Only default users remain
+        $db->exec("ALTER TABLE notifications AUTO_INCREMENT = 1");
+        $db->exec("ALTER TABLE system_logs AUTO_INCREMENT = 1");
+        $db->exec("ALTER TABLE applications AUTO_INCREMENT = 1");
+        $db->exec("ALTER TABLE internships AUTO_INCREMENT = 1");
+        echo "<p>AUTO_INCREMENT values reset for clean state.</p>\n";
     }
     
     $db->commit();
@@ -113,15 +143,14 @@ try {
     echo "<li>{$deletedLogs} Sample system logs removed</li>\n";
     echo "<li>{$deletedNotifications} Sample notifications removed</li>\n";
     echo "</ul>\n";
-    echo "<p><strong>Preserved original data:</strong></p>\n";
+    echo "<p><strong>Preserved data:</strong></p>\n";
     echo "<ul>\n";
-    echo "<li>Admin user (admin@example.com)</li>\n";
-    echo "<li>Default student user (student@example.com)</li>\n";
-    echo "<li>Default company user (company@example.com)</li>\n";
-    echo "<li>Default student profile</li>\n";
+    echo "<li>Default system users (admin, uoc, codalyth)</li>\n";
+    echo "<li>Any manually created legitimate data</li>\n";
+    echo "<li>Core system configurations</li>\n";
     echo "</ul>\n";
-    echo "<p><a href='analytics.php'>View Analytics Dashboard</a></p>\n";
-    echo "<p><a href='seed-analytics-data.php'>Generate Sample Data Again</a></p>\n";
+    echo "<p><a href='../../pages/admin/analytics.php'>View Analytics Dashboard</a></p>\n";
+    echo "<p><a href='seed-sample-data.php'>Generate Sample Data Again</a></p>\n";
     
 } catch (Exception $e) {
     $db->rollback();
