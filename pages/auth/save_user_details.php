@@ -6,17 +6,30 @@ $db = getDB();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
+        // Begin transaction for data consistency
+        $db->beginTransaction();
+        
         // Get form data
-        $full_name = $_POST['full_name'];
-        $email = $_POST['email'];
-        $phone = $_POST['phone'];
-        $university = $_POST['university'];
-        $degree_program = $_POST['degree_program'];
-        $year_of_study = $_POST['year_of_study'];
-        $gpa = $_POST['gpa'] ?: null;
-        $key_skills = $_POST['key_skills'];
-        $areas_of_interest = $_POST['areas_of_interest'];
-        $portfolio_links = $_POST['portfolio_links'] ?: null;
+        $full_name = trim($_POST['full_name']);
+        $email = trim($_POST['email']);
+        $phone = trim($_POST['phone']);
+        $university = trim($_POST['university']);
+        $degree_program = trim($_POST['degree_program']);
+        $year_of_study = !empty($_POST['year_of_study']) ? (int)$_POST['year_of_study'] : null;
+        $gpa = !empty($_POST['gpa']) ? (float)$_POST['gpa'] : null;
+        $key_skills = trim($_POST['key_skills']);
+        $areas_of_interest = trim($_POST['areas_of_interest']);
+        $portfolio_links = !empty($_POST['portfolio_links']) ? trim($_POST['portfolio_links']) : null;
+
+        // Split full name into first and last name
+        $name_parts = explode(' ', $full_name, 2);
+        $first_name = $name_parts[0];
+        $last_name = isset($name_parts[1]) ? $name_parts[1] : '';
+
+        // Validate required fields
+        if (empty($first_name) || empty($email) || empty($university) || empty($degree_program)) {
+            throw new Exception('Required fields are missing: first name, email, university, and degree program are required.');
+        }
 
         // Check if student profile already exists
         $check_profile = "SELECT id FROM student_profiles WHERE user_id = ?";
@@ -39,9 +52,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 WHERE user_id = ?";
             
             $stmt = $db->prepare($update_profile);
-            $stmt->execute([
-                $full_name,
-                '', // last_name (empty for now)
+            $result = $stmt->execute([
+                $first_name,
+                $last_name,
                 $phone,
                 $university,
                 $degree_program,
@@ -52,6 +65,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $areas_of_interest,
                 $_SESSION['user_id']
             ]);
+            
+            if (!$result) {
+                throw new Exception('Failed to update student profile.');
+            }
         } else {
             // Insert new profile
             $insert_profile = "INSERT INTO student_profiles 
@@ -59,10 +76,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             
             $stmt = $db->prepare($insert_profile);
-            $stmt->execute([
+            $result = $stmt->execute([
                 $_SESSION['user_id'],
-                $full_name,
-                '', // last_name (empty for now)
+                $first_name,
+                $last_name,
                 $phone,
                 $university,
                 $degree_program,
@@ -72,8 +89,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $key_skills,
                 $areas_of_interest
             ]);
+            
+            if (!$result) {
+                throw new Exception('Failed to create student profile.');
+            }
         }
 
+        // Commit transaction
+        $db->commit();
+        
         // Set session variable to indicate profile is complete
         $_SESSION['profile_complete'] = true;
         
@@ -84,8 +108,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         logActivity('User details saved successfully');
 
     } catch (Exception $e) {
+        // Rollback transaction on error
+        if ($db->inTransaction()) {
+            $db->rollback();
+        }
+        
         echo "<script>
-            alert('Error saving user details: " . $e->getMessage() . "');
+            alert('Error saving user details: " . addslashes($e->getMessage()) . "');
             window.location.href='user_details.php';
         </script>";
         logActivity('Error saving user details', $e->getMessage());

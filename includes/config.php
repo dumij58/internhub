@@ -76,7 +76,7 @@ function getDB() {
 
 // Fetches a user's record from the database by their username.
 function getUser($username) {
-    global $db;
+    $db = getDB();
     try {
         $sql = "SELECT * FROM users WHERE username = :username";
         $stmt = $db->prepare($sql);

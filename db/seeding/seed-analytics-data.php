@@ -76,14 +76,14 @@ try {
 
     // 0. Generate Default Users
     echo "<p>Creating default users...</p>\n";
-    /*
+
     $username = "admin";
     $email = "admin@internhub.com";
     $password = '$2y$10$s28tVzy9K7vfqSez4aKYHuI4eeBfAyKhqwD4ZGlkMsNwYEC5f8qba'; // admin
     $type_id = 1;
     $stmt = $db->prepare("INSERT INTO users (username, email, password_hash, user_type_id) VALUES (?, ?, ?, 2)");
     $stmt->execute([$username, $email, $password]);
-*/
+    
     $username = "uoc";
     $email = "uoc@university.edu";
     $password = '$2y$10$s28tVzy9K7vfqSez4aKYHuI4eeBfAyKhqwD4ZGlkMsNwYEC5f8qba'; // uoc
@@ -182,7 +182,6 @@ try {
         $responsibilities = "Assist with daily operations, participate in team meetings, complete assigned projects.";
         $location = $locations[array_rand($locations)];
         $durationMonths = rand(3, 12);
-        $stipend = rand(0, 1) ? rand(15000, 75000) : null; // Some internships are unpaid
         $status = $statuses[array_rand($statuses)];
         $remoteOption = rand(0, 1);
         $experienceLevel = $experienceLevels[array_rand($experienceLevels)];
@@ -209,8 +208,8 @@ try {
     
     // 4. Generate Applications (80 applications)
     echo "<p>Creating 80 applications...</p>\n";
-    $applicationStatuses = ['submitted', 'under_review', 'shortlisted', 'rejected', 'accepted', 'withdrawn'];
-    
+    $applicationStatuses = ['draft', 'submitted', 'under_review', 'rejected', 'accepted'];
+
     for ($i = 1; $i <= 80; $i++) {
         $internshipId = $internshipIds[array_rand($internshipIds)];
         $studentId = $studentUserIds[array_rand($studentUserIds)];

@@ -98,7 +98,8 @@ CREATE TABLE applications (
     interview_scheduled TIMESTAMP NULL,
     interview_notes TEXT,
     FOREIGN KEY (internship_id) REFERENCES internships(id),
-    FOREIGN KEY (student_id) REFERENCES users(user_id)
+    FOREIGN KEY (student_id) REFERENCES users(user_id),
+    FOREIGN KEY (reviewed_by) REFERENCES users(user_id)
 );
 
 -- System Logs (for audit trail)

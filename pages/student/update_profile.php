@@ -13,6 +13,9 @@ $db = getDB();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
+        // Begin transaction for data consistency
+        $db->beginTransaction();
+        
         // Get form data
         $first_name = trim($_POST['first_name']);
         $last_name = trim($_POST['last_name']);
@@ -29,6 +32,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (empty($first_name) || empty($last_name)) {
             header('Content-Type: application/json');
             echo json_encode(['success' => false, 'message' => 'First name and last name are required.']);
+            exit;
+        }
+
+        // Validate GPA if provided
+        if ($gpa !== null && ($gpa < 0 || $gpa > 4.0)) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'GPA must be between 0.0 and 4.0.']);
+            exit;
+        }
+
+        // Validate year of study if provided
+        if ($year_of_study !== null && ($year_of_study < 1 || $year_of_study > 8)) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Year of study must be between 1 and 8.']);
+            exit;
+        }
+
+        // Validate portfolio URL if provided
+        if ($portfolio_url !== null && !filter_var($portfolio_url, FILTER_VALIDATE_URL)) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Please provide a valid portfolio URL.']);
             exit;
         }
 
@@ -67,6 +91,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $bio,
                 $_SESSION['user_id']
             ]);
+            
+            if (!$success) {
+                throw new Exception('Failed to update student profile in database.');
+            }
         } else {
             // Create new profile
             $insert_query = "INSERT INTO student_profiles 
@@ -87,26 +115,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $portfolio_url,
                 $bio
             ]);
-        }
-
-        if ($success) {
-            // Update session variable if it exists
-            if (isset($_SESSION['student_name'])) {
-                $_SESSION['student_name'] = $first_name . ' ' . $last_name;
-            }
             
-            logActivity('Student profile updated successfully');
-            header('Content-Type: application/json');
-            echo json_encode(['success' => true, 'message' => 'Profile updated successfully!']);
-        } else {
-            header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'message' => 'Failed to update profile.']);
+            if (!$success) {
+                throw new Exception('Failed to create student profile in database.');
+            }
         }
 
-    } catch (Exception $e) {
-        logActivity('Error updating student profile', $e->getMessage());
+        // Commit transaction
+        $db->commit();
+
+        // Update session variable if it exists
+        if (isset($_SESSION['student_name'])) {
+            $_SESSION['student_name'] = $first_name . ' ' . $last_name;
+        }
+        
+        logActivity('Student profile updated successfully', "Profile updated for user ID: " . $_SESSION['user_id']);
         header('Content-Type: application/json');
-        echo json_encode(['success' => false, 'message' => 'An error occurred: ' . $e->getMessage()]);
+        echo json_encode(['success' => true, 'message' => 'Profile updated successfully!']);
+
+    } catch (PDOException $e) {
+        // Rollback transaction on database error
+        if ($db->inTransaction()) {
+            $db->rollback();
+        }
+        
+        logActivity('Database error updating student profile', $e->getMessage() . " - User ID: " . $_SESSION['user_id']);
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'message' => 'Database error occurred while updating profile.']);
+    } catch (Exception $e) {
+        // Rollback transaction on any error
+        if ($db->inTransaction()) {
+            $db->rollback();
+        }
+        
+        logActivity('Error updating student profile', $e->getMessage() . " - User ID: " . $_SESSION['user_id']);
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'message' => $e->getMessage()]);
     }
 } else {
     header('Content-Type: application/json');
