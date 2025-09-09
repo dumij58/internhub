@@ -18,8 +18,49 @@ if (isLoggedIn()) {
 require_once '../../includes/header.php';
 ?>
 
-<h1>Welcome, <?php echo isset($_SESSION['username']) ? escape($_SESSION['username']) : 'Guest'; ?>!</h1>
-<p>This is your student dashboard.</p>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1>Welcome, <?php echo isset($_SESSION['username']) ? escape($_SESSION['username']) : 'Guest'; ?>!</h1>
+            <p class="lead">Find and apply for internship opportunities</p>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-search fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">Find Internships</h5>
+                    <p class="card-text">Browse and search for available internship opportunities.</p>
+                    <a href="find_internships.php" class="btn btn-primary">Find Internships</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-file-alt fa-3x text-success mb-3"></i>
+                    <h5 class="card-title">My Applications</h5>
+                    <p class="card-text">View the status of your submitted applications.</p>
+                    <a href="my_applications.php" class="btn btn-success">View Applications</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-user fa-3x text-warning mb-3"></i>
+                    <h5 class="card-title">My Profile</h5>
+                    <p class="card-text">Update your profile information and skills.</p>
+                    <a href="profile.php" class="btn btn-warning">View Profile</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <?php
 // --- Include the footer ---
