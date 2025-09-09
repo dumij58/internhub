@@ -28,6 +28,7 @@ CREATE TABLE student_profiles (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL UNIQUE,
     student_id VARCHAR(20),
+    profile_pic_path VARCHAR(255),
     first_name VARCHAR(50) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
     phone VARCHAR(20),
@@ -47,6 +48,7 @@ CREATE TABLE student_profiles (
 CREATE TABLE company_profiles (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL UNIQUE,
+    company_logo_path VARCHAR(255),
     company_name VARCHAR(100) NOT NULL,
     industry_type VARCHAR(50),
     company_website VARCHAR(255),
@@ -89,7 +91,7 @@ CREATE TABLE applications (
     student_id INT NOT NULL, -- Links to users table
     resume_path VARCHAR(255),
     additional_documents TEXT, -- JSON array of file paths
-    status ENUM('submitted', 'under_review', 'shortlisted', 'rejected', 'accepted', 'withdrawn') DEFAULT 'submitted',
+    status ENUM('draft', 'submitted', 'under_review', 'rejected', 'accepted') DEFAULT 'draft',
     application_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     reviewed_date TIMESTAMP NULL,
     reviewed_by INT NULL,
@@ -157,7 +159,7 @@ CREATE INDEX idx_notifications_user_id ON notifications(user_id);
 CREATE INDEX idx_notifications_is_read ON notifications(is_read);
 
 
-
+/*
 -- ====================================
 --  INSERT DEFAULT DATA
 -- ====================================
@@ -177,3 +179,4 @@ INSERT INTO users (username, email, password_hash, user_type_id) VALUES
 -- Create Student Profile for Default Student
 INSERT INTO student_profiles (user_id, student_id, phone, bio, university, major, year_of_study, gpa) VALUES
 (2, 'STU001', '94712808865', 'Default user for InternHub web application', 'Default University', 'Computer Science', 3, 3.50);
+*/
