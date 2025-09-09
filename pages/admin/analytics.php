@@ -112,7 +112,7 @@ require_once '../../includes/header.php';
 
 <div class="analytics-container">
     <div class="analytics-header">
-        <h1 style="margin: 0; color: #333;">System Analytics Dashboard</h1>
+        <h1 style="margin: 0; color: #333;">System Analytics</h1>
         <div style="color: #666; font-size: 0.9rem;">
             Last Updated: <?php echo date('M d, Y H:i'); ?>
         </div>
