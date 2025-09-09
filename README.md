@@ -28,13 +28,6 @@ A simple full-stack web application for Internship application and tracking, dev
     > [!WARNING]
     > Using a version of XAMPP other than v8.2.4 may lead to compatibility issues.
 
-- Using command-line interface
-
-    1. Install httpd (apache server)
-    2. Install php
-    3. Install mysql
-    4. Install phpmyadmin
-
 ### 2. Clone the repository
 
 1. Navigate to the XAMPP installation directory (e.g., `C:\xampp\htdocs` on Windows or `/opt/lampp/htdocs` on Linux/Mac)
@@ -56,9 +49,8 @@ A simple full-stack web application for Internship application and tracking, dev
 
 3. Seed the database with default users
 
-    - You can,
-        - from the terminal, navigate to the `db/seeding` folder and execute the `seed-default-users.php` file
-        - from the browser, navigate to `localhost/internhub/db/seeding/seed-default-users.php`
+    - from the **terminal**, navigate to the `db/seeding` folder and execute the `seed-default-users.php` file
+    - from the **browser**, navigate to `localhost/internhub/db/seeding/seed-default-users.php`
 
 4. (Optional) FOR TESTING: Seed the database with sample data
 
@@ -67,7 +59,7 @@ A simple full-stack web application for Internship application and tracking, dev
         - from the browser, login as admin and navigate to `localhost/internhub/db/seeding/seed-analytics-data.php`
     - When you are done testing, you can remove the sample data by executing the `unseed-analytics-data.php` file in the same way
 
-### 3. Login
+### 4. Login
 
 1. Open your browser and navigate to;
     - For Admins:
@@ -76,15 +68,15 @@ A simple full-stack web application for Internship application and tracking, dev
      `http://localhost/internhub/pages/login.php`
 2. Use the default credentials below to log in
 
-#### Default User Credentials
-    - Admin
-        - username: admin
-        - password: admin
+    #### Default User Credentials
+        - Admin
+            - username: admin
+            - password: admin
 
-    - Student
-        - email: uoc@example.com
-        - password: uoc
+        - Student
+            - email: uoc@example.com
+            - password: uoc
 
-    - Company
-        - email: hr@codalyth.com
-        - password: codalyth
+        - Company
+            - email: hr@codalyth.com
+            - password: codalyth
