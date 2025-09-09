@@ -2,40 +2,76 @@
 require_once '../../includes/config.php';
 $db = getDB();
 
-if (isset($_POST['signUp'])){
-    $username = $_POST['name']; // Using name from form as username
-    $email = $_POST['email'];
+if ($_POST['signUp']) {
+    $username = trim($_POST['name']);
+    $email = trim($_POST['email']);
     $password = $_POST['password'];
-    $user_type_id = $_POST['user_type']; // Get user type from form
-    $password_hash = password_hash($password, PASSWORD_DEFAULT);
+    $user_type_id = (int) $_POST['user_type'];
 
     // Validate user type
-    if (!in_array($user_type_id, ['2', '3'])) {
+    if (!in_array($user_type_id, [2, 3])) { // Only allow student (2) and company (3)
         echo "<script>alert('Please select a valid account type'); window.location.href='login.php';</script>";
-        exit;
+        exit();
     }
 
-    // Check if email already exists using prepared statement
-    $checkEmail = "SELECT * FROM users WHERE email = ?";
-    $stmt = $db->prepare($checkEmail);
-    $stmt->execute([$email]);
-    
-    if($stmt->rowCount() > 0){
-        echo "<script>alert('Email Address Already exists'); window.location.href='login.php';</script>";
-    }
-    else{
+    try {
+        // Begin transaction for atomic operation
+        $db->beginTransaction();
+        
+        // Check if email already exists using prepared statement
+        $checkEmail = "SELECT * FROM users WHERE email = ?";
+        $stmt = $db->prepare($checkEmail);
+        $stmt->execute([$email]);
+        
+        if ($stmt->rowCount() > 0) {
+            $db->rollback();
+            echo "<script>alert('This email is already registered!'); window.location.href='login.php';</script>";
+            exit();
+        }
+        
+        // Check if username already exists
+        $checkUsername = "SELECT * FROM users WHERE username = ?";
+        $stmt = $db->prepare($checkUsername);
+        $stmt->execute([$username]);
+        
+        if ($stmt->rowCount() > 0) {
+            $db->rollback();
+            echo "<script>alert('This username is already taken!'); window.location.href='login.php';</script>";
+            exit();
+        }
+
         // Insert new user using prepared statement with selected user type
+        $password_hash = hashPassword($password);
         $insertQuery = "INSERT INTO users(username, email, password_hash, user_type_id) VALUES (?, ?, ?, ?)";
         $stmt = $db->prepare($insertQuery);
         
-        try {
-            $stmt->execute([$username, $email, $password_hash, $user_type_id]);
-            $user_type_name = ($user_type_id == '2') ? 'Student' : 'Company';
-            echo "<script>alert('Thank you " . $username . "! " . $user_type_name . " registration successful.'); window.location.href='login.php';</script>";
-        } catch(PDOException $e) {
-            echo "<script>alert('Error: " . $e->getMessage() . "'); window.location.href='login.php';</script>";
+        $result = $stmt->execute([$username, $email, $password_hash, $user_type_id]);
+        
+        if (!$result) {
+            throw new Exception('Failed to create user account');
         }
-    }       
+
+        // Commit the transaction
+        $db->commit();
+        
+        echo "<script>alert('Registration successful!'); window.location.href='login.php';</script>";
+        logActivity('User registration successful', "New user registered: $username ($email) as type ID: $user_type_id");
+        
+    } catch (PDOException $e) {
+        if ($db->inTransaction()) {
+            $db->rollback();
+        }
+        logActivity('Database error during registration', $e->getMessage());
+        echo "<script>alert('Database error occurred during registration. Please try again.'); window.location.href='login.php';</script>";
+        exit();
+    } catch (Exception $e) {
+        if ($db->inTransaction()) {
+            $db->rollback();
+        }
+        logActivity('Error during registration', $e->getMessage());
+        echo "<script>alert('An error occurred during registration: " . addslashes($e->getMessage()) . "'); window.location.href='login.php';</script>";
+        exit();
+    }
 }
 
 if(isset($_POST['signIn'])){

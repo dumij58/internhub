@@ -21,7 +21,11 @@ require_once '../includes/header.php';
 <br />
 <br />
 
-<a href="<?php echo $pages_path; ?>/auth/login.php" class="button">Return to Login</a>
+<?php if (isset($_GET['redirect'])): ?>
+    <a href="<?php echo escape($_GET['redirect']); ?>" class="button">Go Back</a>
+<?php else: ?>  
+    <a href="<?php echo $pages_path . '/auth/login.php'; ?>" class="button">Go Back to Login</a>
+<?php endif; ?>
 
 <?php
 require_once '../includes/footer.php';

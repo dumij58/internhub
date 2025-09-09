@@ -29,7 +29,7 @@ global $root_path, $pages_path, $assets_path;
                         <?php if (isset($_SESSION['role'])): ?>
                             <?php if ($_SESSION['role'] === 'student'): ?>
                                 <!-- Student Navigation -->
-                                <a href="<?php echo $pages_path; ?>/student/profile.php">My Profile</a>
+                                <a href="<?php echo $pages_path; ?>/student/dashboard.php">My Dashboard</a>
                                 <a href="<?php echo $pages_path; ?>/student/find_internships.php">Find Internships</a>
                                 <a href="<?php echo $pages_path; ?>/student/my_applications.php">My Applications</a>
                             <?php elseif ($_SESSION['role'] === 'company'): ?>

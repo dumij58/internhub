@@ -2,8 +2,8 @@
 require_once '../../includes/config.php';
 requireLogin();
 $role =  $_SESSION['role'];
-if ($role !== 'company') {
-    logActivity('Unauthorized Access Attempt', 'User changed the url from "' . $role . '" to "company".');
+if ($role !== 'student') {
+    logActivity('Unauthorized Access Attempt', 'User changed the url from "' . $role . '" to "student".');
     http_response_code(401);
     exit;
 }
@@ -11,63 +11,60 @@ if ($role !== 'company') {
 // --- Page-specific variables ---
 $db = getDB();
 $user_id = $_SESSION['user_id'];
+$student_name = $_SESSION['student_name'] ?? 'Student';
+$page_title = $student_name . ' Dashboard';
 global $pages_path;
 
-// Fetch company profile data
-$profile_query = "SELECT cp.*, u.username, u.email 
-                  FROM company_profiles cp 
-                  JOIN users u ON cp.user_id = u.user_id 
-                  WHERE cp.user_id = ?";
+// Fetch student profile data
+$profile_query = "SELECT sp.*, u.username, u.email
+                  FROM student_profiles sp 
+                  JOIN users u ON sp.user_id = u.user_id 
+                  WHERE sp.user_id = ?";
 $stmt = $db->prepare($profile_query);
 $stmt->execute([$user_id]);
-$company_profile = $stmt->fetch(PDO::FETCH_ASSOC);
+$student_profile = $stmt->fetch(PDO::FETCH_ASSOC);
 
-$company_name = $company_profile['company_name'] ?? 'Company';
-$page_title = $company_name . ' Dashboard';
-
-// Fetch company statistics
+// Fetch student statistics
 $stats_query = "SELECT 
-    COUNT(CASE WHEN status = 'published' THEN 1 END) as active_internships,
-    COUNT(CASE WHEN status = 'draft' THEN 1 END) as draft_internships,
-    COUNT(CASE WHEN status = 'closed' THEN 1 END) as closed_internships,
-    COUNT(*) as total_internships
-    FROM internships 
-    WHERE company_id = ?";
+    COUNT(CASE WHEN status = 'submitted' THEN 1 END) as active_applications,
+    COUNT(CASE WHEN status = 'draft' THEN 1 END) as draft_applications,
+    COUNT(CASE WHEN status = 'under_review' THEN 1 END) as under_review_applications,
+    COUNT(CASE WHEN status = 'rejected' THEN 1 END) as rejected_applications,
+    COUNT(CASE WHEN status = 'accepted' THEN 1 END) as accepted_applications,
+    COUNT(*) as total_applications
+    FROM applications 
+    WHERE student_id = ?";
 $stmt = $db->prepare($stats_query);
-$stmt->execute([$company_profile['id']]);
+$stmt->execute([$user_id]);
 $stats = $stmt->fetch(PDO::FETCH_ASSOC);
-
-// Fetch total applications
-$app_query = "SELECT COUNT(*) as total_applications
-              FROM applications a
-              JOIN internships i ON a.internship_id = i.id
-              WHERE i.company_id = ?";
-$stmt = $db->prepare($app_query);
-$stmt->execute([$company_profile['id']]);
-$app_stats = $stmt->fetch(PDO::FETCH_ASSOC);
 
 // Fetch recent applications
 $recent_apps_query = "SELECT a.*, i.title as internship_title, sp.first_name, sp.last_name, u.email,
-                             a.application_date, a.status
+                             a.application_date, a.status, cp.company_name
                       FROM applications a
                       JOIN internships i ON a.internship_id = i.id
+                      JOIN company_profiles cp ON i.company_id = cp.id
                       JOIN users u ON a.student_id = u.user_id
                       LEFT JOIN student_profiles sp ON u.user_id = sp.user_id
-                      WHERE i.company_id = ?
+                      WHERE a.student_id = ?
                       ORDER BY a.application_date DESC
                       LIMIT 5";
 $stmt = $db->prepare($recent_apps_query);
-$stmt->execute([$company_profile['id']]);
+$stmt->execute([$user_id]);
 $recent_applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Calculate profile completion percentage
 $completion_fields = [
-    'company_name' => $company_profile['company_name'],
-    'industry_type' => $company_profile['industry_type'],
-    'company_website' => $company_profile['company_website'],
-    'company_description' => $company_profile['company_description'],
-    'address' => $company_profile['address'],
-    'phone_number' => $company_profile['phone_number']
+    'student_id' => $student_profile['student_id'],
+    'first_name' => $student_profile['first_name'],
+    'last_name' => $student_profile['last_name'],
+    'university' => $student_profile['university'],
+    'major' => $student_profile['major'],
+    'year_of_study' => $student_profile['year_of_study'],
+    'gpa' => $student_profile['gpa'],
+    'email' => $student_profile['email'],
+    'phone' => $student_profile['phone'],
+    'bio' => $student_profile['bio']
 ];
 
 $completed_fields = 0;
@@ -87,46 +84,33 @@ require_once '../../includes/header.php';
     <div class="card">
         <div class="card-body">
             <div class="profile-header">
-                <div class="company-logo">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-building" viewBox="0 0 16 16">
-                        <path fill-rule="evenodd" d="M14.763.075A.5.5 0 0 1 15 .5v15a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5V14h-1v1.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V10a.5.5 0 0 1 .342-.474L6 7.64V4.5a.5.5 0 0 1 .276-.447l8-4a.5.5 0 0 1 .487.022ZM6 8.694 1 10.36V15h5V8.694ZM7 15h2v-1.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5V15h2V1.309l-7 3.5V15Z"/>
-                        <path d="M2 11h1v1H2v-1Zm2 0h1v1H4v-1Zm-2 2h1v1H2v-1Zm2 0h1v1H4v-1Zm4-4h1v1H8V9Zm2 0h1v1h-1V9Zm-2 2h1v1H8v-1Zm2 0h1v1h-1v-1Zm2-2h1v1h-1V9Zm0 2h1v1h-1v-1ZM8 7h1v1H8V7Zm2 0h1v1h-1V7Zm2 0h1v1h-1V7ZM8 5h1v1H8V5Zm2 0h1v1h-1V5Zm2 0h1v1h-1V5Zm0-2h1v1h-1V3Z"/>
+                <div class="student-photo">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                        <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+                        <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
                     </svg>
                 </div>
-                <div class="company-info">
-                    <h1><?php echo escape($company_profile['company_name'] ?? 'Company Name'); ?></h1>
-                    <div class="company-meta">
+                <div class="student-info">
+                    <h1><?php echo escape($student_profile['first_name'] ?? 'First Name'); ?> <?php echo escape($student_profile['last_name'] ?? 'Last Name'); ?></h1>
+                    <div class="student-meta">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-diagram-3" viewBox="0 0 16 16">
                             <path fill-rule="evenodd" d="M6 3.5A1.5 1.5 0 0 1 7.5 2h1A1.5 1.5 0 0 1 10 3.5v1A1.5 1.5 0 0 1 8.5 6v1H14a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0V8h-5v.5a.5.5 0 0 1-1 0V8h-5v.5a.5.5 0 0 1-1 0v-1A.5.5 0 0 1 2 7h5.5V6A1.5 1.5 0 0 1 6 4.5v-1zM8.5 5a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1zM0 11.5A1.5 1.5 0 0 1 1.5 10h1A1.5 1.5 0 0 1 4 11.5v1A1.5 1.5 0 0 1 2.5 14h-1A1.5 1.5 0 0 1 0 12.5v-1zm1.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zm4.5.5A1.5 1.5 0 0 1 7.5 10h1a1.5 1.5 0 0 1 1.5 1.5v1A1.5 1.5 0 0 1 8.5 14h-1A1.5 1.5 0 0 1 6 12.5v-1zm1.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zm4.5.5a1.5 1.5 0 0 1 1.5-1.5h1a1.5 1.5 0 0 1 1.5 1.5v1a1.5 1.5 0 0 1-1.5 1.5h-1a1.5 1.5 0 0 1-1.5-1.5v-1zm1.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1z"/>
                         </svg>
-                        <?php echo escape($company_profile['industry_type'] ?? 'Industry not specified'); ?>
+                        <?php echo escape($student_profile['major'] ?? 'Major not specified'); ?>
+                        <?php if (!empty($student_profile['university'])): ?>
+                            • <?php echo escape($student_profile['university']); ?>
+                        <?php endif; ?>
                     </div>
-                    <?php if (!empty($company_profile['company_website'])): ?>
-                        <div class="company-meta">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-globe" viewBox="0 0 16 16">
-                                <path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm7.5-6.923c-.67.204-1.335.82-1.887 1.855A7.97 7.97 0 0 0 5.145 4H7.5V1.077zM4.09 4a9.267 9.267 0 0 1 .64-1.539 6.7 6.7 0 0 1 .597-.933A7.025 7.025 0 0 0 2.255 4H4.09zm-.582 3.5c.03-.877.138-1.718.312-2.5H1.674a6.958 6.958 0 0 0-.656 2.5h2.49zM4.847 5a12.5 12.5 0 0 0-.338 2.5H7.5V5H4.847zM8.5 5v2.5h2.99a12.495 12.495 0 0 0-.337-2.5H8.5zM4.51 8.5a12.5 12.5 0 0 0 .337 2.5H7.5V8.5H4.51zm3.99 0V11h2.653c.187-.765.306-1.608.338-2.5H8.5zM5.145 12c.138.386.295.744.468 1.068.552 1.035 1.218 1.65 1.887 1.855V12H5.145zm.182 2.472a6.696 6.696 0 0 1-.597-.933A9.268 9.268 0 0 1 4.09 12H2.255a7.024 7.024 0 0 0 3.072 2.472zM3.82 11a13.652 13.652 0 0 1-.312-2.5h-2.49c.062.89.291 1.733.656 2.5H3.82zm6.853 3.472A7.024 7.024 0 0 0 13.745 12H11.91a9.27 9.27 0 0 1-.64 1.539 6.688 6.688 0 0 1-.597.933zM8.5 12v2.923c.67-.204 1.335-.82 1.887-1.855.173-.324.33-.682.468-1.068H8.5zm3.68-1h2.146c.365-.767.594-1.61.656-2.5h-2.49a13.65 13.65 0 0 1-.312 2.5zm2.802-3.5a6.959 6.959 0 0 0-.656-2.5H12.18c.174.782.282 1.623.312 2.5h2.49zM11.27 2.461c.247.464.462.98.64 1.539h1.835a7.024 7.024 0 0 0-3.072-2.472c.218.284.418.598.597.933zM10.855 4a7.966 7.966 0 0 0-.468-1.068C9.835 1.897 9.17 1.282 8.5 1.077V4h2.355z"/>
+                    <?php if (!empty($student_profile['year_of_study'])): ?>
+                        <div class="student-meta">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar" viewBox="0 0 16 16">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
                             </svg>
-                            <a href="<?php echo escape($company_profile['company_website']); ?>" target="_blank">
-                                <?php echo escape($company_profile['company_website']); ?>
-                            </a>
+                            Year <?php echo escape($student_profile['year_of_study']); ?>
+                            <?php if (!empty($student_profile['gpa'])): ?>
+                                • GPA: <?php echo escape($student_profile['gpa']); ?>
+                            <?php endif; ?>
                         </div>
-                    <?php endif; ?>
-                    <?php if ($company_profile['verified']): ?>
-                        <span class="badge verified">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-check-circle" viewBox="0 0 16 16">
-                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-                                <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.061L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/>
-                            </svg>
-                            Verified
-                        </span>
-                    <?php else: ?>
-                        <span class="badge pending">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-clock" viewBox="0 0 16 16">
-                                <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
-                                <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
-                            </svg>
-                            Pending Verification
-                        </span>
                     <?php endif; ?>
                 </div>
                 <div class="profile-actions">
@@ -163,37 +147,38 @@ require_once '../../includes/header.php';
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-briefcase" viewBox="0 0 16 16">
                 <path d="M6.5 1A1.5 1.5 0 0 0 5 2.5V3H1.5A1.5 1.5 0 0 0 0 4.5v8A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-8A1.5 1.5 0 0 0 14.5 3H11v-.5A1.5 1.5 0 0 0 9.5 1h-3zm0 1h3a.5.5 0 0 1 .5.5V3H6v-.5a.5.5 0 0 1 .5-.5zm1.886 6.914L15 7.151V12.5a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5V7.15l6.614 1.764a1.5 1.5 0 0 0 .772 0zM1.5 4h13a.5.5 0 0 1 .5.5v1.616L8.129 7.948a.5.5 0 0 1-.258 0L1 6.116V4.5a.5.5 0 0 1 .5-.5z"/>
             </svg>
-            <h3><?php echo $stats['active_internships'] ?? 0; ?></h3>
-            <p>Active Internships</p>
+            <h3><?php echo $stats['active_applications'] ?? 0; ?></h3>
+            <p>Submitted Applications</p>
         </div>
         <div class="stat-card info">
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-people" viewBox="0 0 16 16">
-                <path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1h8Zm-7.978-1A.261.261 0 0 1 7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002A.274.274 0 0 1 15 13H7.022ZM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM6.936 9.28a5.88 5.88 0 0 0-1.23-.247A7.35 7.35 0 0 0 5 9c-4 0-5 3-5 4 0 .667.333 1 1 1h4.216A2.238 2.238 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816ZM4.92 10A5.493 5.493 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275ZM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0Zm3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"/>
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-eye" viewBox="0 0 16 16">
+                <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"/>
+                <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/>
             </svg>
-            <h3><?php echo $app_stats['total_applications'] ?? 0; ?></h3>
-            <p>Total Applications</p>
+            <h3><?php echo $stats['under_review_applications'] ?? 0; ?></h3>
+            <p>Under Review</p>
         </div>
         <div class="stat-card warning">
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-file-earmark-text" viewBox="0 0 16 16">
                 <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5z"/>
                 <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5L9.5 0zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/>
             </svg>
-            <h3><?php echo $stats['draft_internships'] ?? 0; ?></h3>
-            <p>Draft Posts</p>
+            <h3><?php echo $stats['draft_applications'] ?? 0; ?></h3>
+            <p>Draft Applications</p>
         </div>
         <div class="stat-card success">
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-check-circle" viewBox="0 0 16 16">
                 <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
                 <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.061L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/>
             </svg>
-            <h3><?php echo $stats['closed_internships'] ?? 0; ?></h3>
-            <p>Completed</p>
+            <h3><?php echo $stats['accepted_applications'] ?? 0; ?></h3>
+            <p>Accepted</p>
         </div>
     </div>
 
-    <!-- Company Information and Recent Applications -->
+    <!-- Student Information and Recent Applications -->
     <div class="content-grid">
-        <!-- Company Information -->
+        <!-- Student Information -->
         <div class="card">
             <div class="card-header">
                 <h3>
@@ -201,14 +186,14 @@ require_once '../../includes/header.php';
                         <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
                         <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
                     </svg>
-                    Company Information
+                    Student Information
                 </h3>
             </div>
-            <div class="card-body company-details">
-                <?php if (!empty($company_profile['company_description'])): ?>
+            <div class="card-body student-details">
+                <?php if (!empty($student_profile['bio'])): ?>
                     <div>
-                        <strong>About Us:</strong>
-                        <p><?php echo nl2br(escape($company_profile['company_description'])); ?></p>
+                        <strong>About Me:</strong>
+                        <p><?php echo nl2br(escape($student_profile['bio'])); ?></p>
                     </div>
                 <?php endif; ?>
                 
@@ -219,10 +204,10 @@ require_once '../../includes/header.php';
                         </svg>
                         Email:
                     </strong>
-                    <?php echo escape($company_profile['email']); ?>
+                    <?php echo escape($student_profile['email']); ?>
                 </p>
                 
-                <?php if (!empty($company_profile['phone_number'])): ?>
+                <?php if (!empty($student_profile['phone'])): ?>
                     <p>
                         <strong>
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-telephone" viewBox="0 0 16 16">
@@ -230,20 +215,21 @@ require_once '../../includes/header.php';
                             </svg>
                             Phone:
                         </strong>
-                        <?php echo escape($company_profile['phone_number']); ?>
+                        <?php echo escape($student_profile['phone']); ?>
                     </p>
                 <?php endif; ?>
                 
-                <?php if (!empty($company_profile['address'])): ?>
+                <?php if (!empty($student_profile['portfolio_url'])): ?>
                     <p>
                         <strong>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-geo-alt" viewBox="0 0 16 16">
-                                <path d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.07A31.493 31.493 0 0 1 8 14.58a31.481 31.481 0 0 1-2.206-2.57c-.726-.95-1.436-2.008-1.96-3.07C3.304 7.867 3 6.862 3 6a5 5 0 0 1 10 0c0 .862-.305 1.867-.834 2.94zM8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10z"/>
-                                <path d="M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-globe" viewBox="0 0 16 16">
+                                <path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm7.5-6.923c-.67.204-1.335.82-1.887 1.855A7.97 7.97 0 0 0 5.145 4H7.5V1.077zM4.09 4a9.267 9.267 0 0 1 .64-1.539 6.7 6.7 0 0 1 .597-.933A7.025 7.025 0 0 0 2.255 4H4.09zm-.582 3.5c.03-.877.138-1.718.312-2.5H1.674a6.958 6.958 0 0 0-.656 2.5h2.49zM4.847 5a12.5 12.5 0 0 0-.338 2.5H7.5V5H4.847zM8.5 5v2.5h2.99a12.495 12.495 0 0 0-.337-2.5H8.5zM4.51 8.5a12.5 12.5 0 0 0 .337 2.5H7.5V8.5H4.51zm3.99 0V11h2.653c.187-.765.306-1.608.338-2.5H8.5zM5.145 12c.138.386.295.744.468 1.068.552 1.035 1.218 1.65 1.887 1.855V12H5.145zm.182 2.472a6.696 6.696 0 0 1-.597-.933A9.268 9.268 0 0 1 4.09 12H2.255a7.024 7.024 0 0 0 3.072 2.472zM3.82 11a13.652 13.652 0 0 1-.312-2.5h-2.49c.062.89.291 1.733.656 2.5H3.82zm6.853 3.472A7.024 7.024 0 0 0 13.745 12H11.91a9.27 9.27 0 0 1-.64 1.539 6.688 6.688 0 0 1-.597.933zM8.5 12v2.923c.67-.204 1.335-.82 1.887-1.855.173-.324.33-.682.468-1.068H8.5zm3.68-1h2.146c.365-.767.594-1.61.656-2.5h-2.49a13.65 13.65 0 0 1-.312 2.5zm2.802-3.5a6.959 6.959 0 0 0-.656-2.5H12.18c.174.782.282 1.623.312 2.5h2.49zM11.27 2.461c.247.464.462.98.64 1.539h1.835a7.024 7.024 0 0 0-3.072-2.472c.218.284.418.598.597.933zM10.855 4a7.966 7.966 0 0 0-.468-1.068C9.835 1.897 9.17 1.282 8.5 1.077V4h2.355z"/>
                             </svg>
-                            Address:
+                            Portfolio:
                         </strong>
-                        <?php echo nl2br(escape($company_profile['address'])); ?>
+                        <a href="<?php echo escape($student_profile['portfolio_url']); ?>" target="_blank">
+                            <?php echo escape($student_profile['portfolio_url']); ?>
+                        </a>
                     </p>
                 <?php endif; ?>
             </div>
@@ -259,7 +245,7 @@ require_once '../../includes/header.php';
                     </svg>
                     Recent Applications
                 </h3>
-                <a href="view_applications.php" class="btn btn-sm btn-primary">View All</a>
+                <a href="my_applications.php" class="btn btn-sm btn-primary">View All</a>
             </div>
             <div class="card-body">
                 <?php if (empty($recent_applications)): ?>
@@ -270,15 +256,15 @@ require_once '../../includes/header.php';
                             </svg>
                         </div>
                         <p>No applications yet</p>
-                        <a href="post_internship.php" class="btn btn-primary btn-sm">Post Your First Internship</a>
+                        <a href="find_internships.php" class="btn btn-primary btn-sm">Find Internships</a>
                     </div>
                 <?php else: ?>
                     <div class="applications-list">
                         <?php foreach ($recent_applications as $app): ?>
                             <div class="application-item">
                                 <div class="application-info">
-                                    <h4><?php echo escape($app['first_name'] . ' ' . $app['last_name']); ?></h4>
-                                    <p><?php echo escape($app['internship_title']); ?></p>
+                                    <h4><?php echo escape($app['internship_title']); ?></h4>
+                                    <p><?php echo escape($app['company_name']); ?></p>
                                     <small><?php echo date('M j, Y', strtotime($app['application_date'])); ?></small>
                                 </div>
                                 <span class="application-status status-<?php echo $app['status']; ?>">
@@ -297,53 +283,72 @@ require_once '../../includes/header.php';
 <div class="modal-overlay" id="editProfileModal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3>Edit Company Profile</h3>
+            <h3>Edit Student Profile</h3>
         </div>
         <form id="editProfileForm" method="POST" action="update_profile.php">
             <div class="modal-body">
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="company_name" class="form-label">Company Name *</label>
-                        <input type="text" class="form-control" id="company_name" name="company_name" 
-                               value="<?php echo escape($company_profile['company_name'] ?? ''); ?>" required>
+                        <label for="first_name" class="form-label">First Name *</label>
+                        <input type="text" class="form-control" id="first_name" name="first_name" 
+                               value="<?php echo escape($student_profile['first_name'] ?? ''); ?>" required>
                     </div>
                     <div class="form-group">
-                        <label for="industry_type" class="form-label">Industry Type *</label>
-                        <select class="form-control" id="industry_type" name="industry_type" required>
-                            <option value="">Select Industry</option>
-                            <option value="IT" <?php echo ($company_profile['industry_type'] === 'IT') ? 'selected' : ''; ?>>Information Technology</option>
-                            <option value="Finance" <?php echo ($company_profile['industry_type'] === 'Finance') ? 'selected' : ''; ?>>Finance & Banking</option>
-                            <option value="Marketing" <?php echo ($company_profile['industry_type'] === 'Marketing') ? 'selected' : ''; ?>>Marketing & Advertising</option>
-                            <option value="Engineering" <?php echo ($company_profile['industry_type'] === 'Engineering') ? 'selected' : ''; ?>>Engineering</option>
-                            <option value="Healthcare" <?php echo ($company_profile['industry_type'] === 'Healthcare') ? 'selected' : ''; ?>>Healthcare</option>
-                            <option value="Education" <?php echo ($company_profile['industry_type'] === 'Education') ? 'selected' : ''; ?>>Education</option>
-                            <option value="Retail" <?php echo ($company_profile['industry_type'] === 'Retail') ? 'selected' : ''; ?>>Retail & E-commerce</option>
-                            <option value="Manufacturing" <?php echo ($company_profile['industry_type'] === 'Manufacturing') ? 'selected' : ''; ?>>Manufacturing</option>
-                            <option value="Consulting" <?php echo ($company_profile['industry_type'] === 'Consulting') ? 'selected' : ''; ?>>Consulting</option>
-                            <option value="Non-profit" <?php echo ($company_profile['industry_type'] === 'Non-profit') ? 'selected' : ''; ?>>Non-profit</option>
-                            <option value="Other" <?php echo ($company_profile['industry_type'] === 'Other') ? 'selected' : ''; ?>>Other</option>
-                        </select>
+                        <label for="last_name" class="form-label">Last Name *</label>
+                        <input type="text" class="form-control" id="last_name" name="last_name" 
+                               value="<?php echo escape($student_profile['last_name'] ?? ''); ?>" required>
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="company_website" class="form-label">Company Website</label>
-                        <input type="url" class="form-control" id="company_website" name="company_website" 
-                               value="<?php echo escape($company_profile['company_website'] ?? ''); ?>">
+                        <label for="student_id" class="form-label">Student ID</label>
+                        <input type="text" class="form-control" id="student_id" name="student_id" 
+                               value="<?php echo escape($student_profile['student_id'] ?? ''); ?>">
                     </div>
                     <div class="form-group">
-                        <label for="phone_number" class="form-label">Phone Number</label>
-                        <input type="tel" class="form-control" id="phone_number" name="phone_number" 
-                               value="<?php echo escape($company_profile['phone_number'] ?? ''); ?>">
+                        <label for="phone" class="form-label">Phone Number</label>
+                        <input type="tel" class="form-control" id="phone" name="phone" 
+                               value="<?php echo escape($student_profile['phone'] ?? ''); ?>">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="university" class="form-label">University</label>
+                        <input type="text" class="form-control" id="university" name="university" 
+                               value="<?php echo escape($student_profile['university'] ?? ''); ?>">
+                    </div>
+                    <div class="form-group">
+                        <label for="major" class="form-label">Major</label>
+                        <input type="text" class="form-control" id="major" name="major" 
+                               value="<?php echo escape($student_profile['major'] ?? ''); ?>">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="year_of_study" class="form-label">Year of Study</label>
+                        <select class="form-control" id="year_of_study" name="year_of_study">
+                            <option value="">Select Year</option>
+                            <option value="1" <?php echo ($student_profile['year_of_study'] == 1) ? 'selected' : ''; ?>>1st Year</option>
+                            <option value="2" <?php echo ($student_profile['year_of_study'] == 2) ? 'selected' : ''; ?>>2nd Year</option>
+                            <option value="3" <?php echo ($student_profile['year_of_study'] == 3) ? 'selected' : ''; ?>>3rd Year</option>
+                            <option value="4" <?php echo ($student_profile['year_of_study'] == 4) ? 'selected' : ''; ?>>4th Year</option>
+                            <option value="5" <?php echo ($student_profile['year_of_study'] == 5) ? 'selected' : ''; ?>>5th Year</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="gpa" class="form-label">GPA</label>
+                        <input type="number" step="0.01" min="0" max="4.0" class="form-control" id="gpa" name="gpa" 
+                               value="<?php echo escape($student_profile['gpa'] ?? ''); ?>">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="address" class="form-label">Company Address</label>
-                    <textarea class="form-control" id="address" name="address" rows="3"><?php echo escape($company_profile['address'] ?? ''); ?></textarea>
+                    <label for="portfolio_url" class="form-label">Portfolio URL</label>
+                    <input type="url" class="form-control" id="portfolio_url" name="portfolio_url" 
+                           value="<?php echo escape($student_profile['portfolio_url'] ?? ''); ?>">
                 </div>
                 <div class="form-group">
-                    <label for="company_description" class="form-label">Company Description</label>
-                    <textarea class="form-control" id="company_description" name="company_description" rows="4"><?php echo escape($company_profile['company_description'] ?? ''); ?></textarea>
+                    <label for="bio" class="form-label">Bio</label>
+                    <textarea class="form-control" id="bio" name="bio" rows="4"><?php echo escape($student_profile['bio'] ?? ''); ?></textarea>
                 </div>
             </div>
             <div class="modal-footer">
@@ -383,7 +388,7 @@ require_once '../../includes/header.php';
     </div>
 </div>
 
-<script src='<?php echo $assets_path; ?>/js/company_profile.js'></script>
+<script src='<?php echo $assets_path; ?>/js/student_profile.js'></script>
 
 <?php
 // --- Include the footer ---

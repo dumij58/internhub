@@ -1000,9 +1000,10 @@ summary.highlight {
 }
 
 
-/* ================================== */
-/* ====== Company Profile Page ====== */
-/* ================================== */
+/* =================================== */
+/* ======   Student & Company   ====== */
+/* ======     Profile Pages     ====== */
+/* =================================== */
 
 .profile-container {
     max-width: 1200px;
@@ -1031,12 +1032,36 @@ summary.highlight {
     border: 2px solid #e9ecef;
 }
 
+.student-photo {
+    width: 80px;
+    height: 80px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: #6c757d;
+    border: 2px solid #e9ecef;
+}
+
 .company-info {
     flex: 1;
     min-width: 300px;
 }
 
 .company-info h1 {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 1.8rem;
+}
+
+.student-info {
+    flex: 1;
+    min-width: 300px;
+}
+
+.student-info h1 {
     margin: 0 0 10px 0;
     color: #333;
     font-size: 1.8rem;
@@ -1103,22 +1128,22 @@ summary.highlight {
     margin-bottom: 30px;
 }
 
-.quick-actions {
-    margin-bottom: 30px;
-}
-
-.actions-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-}
-
 .company-details p {
     margin: 10px 0;
     line-height: 1.5;
 }
 
 .company-details strong {
+    color: #333;
+    margin-right: 10px;
+}
+
+.student-details p {
+    margin: 10px 0;
+    line-height: 1.5;
+}
+
+.student-details strong {
     color: #333;
     margin-right: 10px;
 }
