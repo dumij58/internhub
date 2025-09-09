@@ -5,7 +5,7 @@ This directory contains scripts to generate sample data for testing the analytic
 ## Files
 
 - **`seed-sample-data.php`** - Generates comprehensive sample data for analytics testing
-- **`unseed-analytics-data.php`** - Removes all sample data and restores the database to its clean state
+- **`unseed-sample-data.php`** - Removes all sample data and restores the database to its clean state
 
 ## Default Users (Automatically Created)
 
@@ -13,25 +13,23 @@ When you import the `schema.sql` file, the following default users and profiles 
 
 ### System Users & Profiles
 - **Admin** (`admin/admin`) - System administrator with full access
-- **University Representative** (`uoc/uoc`) - Student profile: University of Colombo, Computer Science, 3rd year
-- **Company Representative** (`company/company`) - Company profile: InternHub Default Company (verified)
+- **Student** (`uoc/uoc`) - Student profile: University of Colombo, Computer Science, 3rd year
 
 ⚠️ **Change these default passwords after first login for security!**
 
 ## Usage
 
-### 1. Import Database Schema (Automatic Setup)
+### 1. Import Database Schema
 
-Import the database schema which automatically creates default users:
-```sql
-mysql -u your_username -p your_database < /path/to/schema.sql
-```
-
-Or use your preferred database management tool to import `db/schema.sql`.
+ - Use phpmyadmin to import `db/schema.sql`.
+   1. Navigate to `http://localhost/phpmyadmin`
+   2. Go to the "Import" tab
+   3. Choose the `schema.sql` file from this `db` folder
+   4. Click "Go" to execute the import
 
 The default users and profiles are created automatically during schema import.
 
-### 2. Generate Sample Data (Optional)
+### 2. Seed Sample Data
 
 Navigate to: `http://localhost/internship-tracker/db/seeding/seed-sample-data.php`
 
@@ -39,16 +37,15 @@ This generates realistic sample data for testing and demonstration purposes.
 
 ### 3. Remove Sample Data (When Done Testing)
 
-Navigate to: `http://localhost/internship-tracker/db/seeding/unseed-analytics-data.php`
+Navigate to: `http://localhost/internship-tracker/db/seeding/unseed-sample-data.php`
 
 This removes all sample data while preserving the default system users and any manually created legitimate data.
 
 ## Sample Data Details
 
 ### Default System Users (3 users with profiles) (`username/password`)
-- **Admin User**: Full system access, user management, analytics (`admin/admin`) - No profile needed
-- **University Representative**: Student profile with University of Colombo details (`uoc/uoc`)
-- **Company Representative**: Verified company profile for InternHub Default Company (`company/company`)
+- **Admin**: Full system access, user management, analytics (`admin/admin`) - No profile needed
+- **Student**: Student profile with University of Colombo details (`uoc/uoc`)
 
 ### Students (40 sample users)
 - Usernames: student001 to student040
@@ -73,7 +70,7 @@ This removes all sample data while preserving the default system users and any m
 
 ### Applications (80 sample applications)
 - Random combinations of students and internships
-- Various statuses (submitted, under_review, rejected, accepted)
+- Various statuses (draft, submitted, under_review, rejected, accepted)
 - Realistic application dates
 - No duplicate applications per student-internship pair
 
