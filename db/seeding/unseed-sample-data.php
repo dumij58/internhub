@@ -9,7 +9,7 @@
  * - Sample internships, applications, notifications, and system logs
  * 
  * This will preserve:
- * - Default system users (admin, uoc, codalyth)
+ * - Default system users (admin, uoc, company)
  * - Any manually created legitimate data
  */
 
@@ -145,7 +145,7 @@ try {
     echo "</ul>\n";
     echo "<p><strong>Preserved data:</strong></p>\n";
     echo "<ul>\n";
-    echo "<li>Default system users (admin, uoc, codalyth)</li>\n";
+    echo "<li>Default system users (admin, uoc, company)</li>\n";
     echo "<li>Any manually created legitimate data</li>\n";
     echo "<li>Core system configurations</li>\n";
     echo "</ul>\n";

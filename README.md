@@ -45,18 +45,12 @@ A simple full-stack web application for Internship application and tracking, dev
 
 2. Go to "Import" tab and choose the `schema.sql` file from the `db` folder of the cloned repository
 
-    - Now your tables are created
+    - This creates your database structure and automatically sets up default users with profiles
 
-3. Seed the database with default users
+3. (Optional) FOR TESTING: Seed the database with sample data
 
-    - from the **terminal**, navigate to the `db/seeding` folder and execute the `seed-default-users.php` file
-    - from the **browser**, navigate to `localhost/internhub/db/seeding/seed-default-users.php`
-
-4. (Optional) FOR TESTING: Seed the database with sample data
-
-    - If you want to test the analytical reports, you can,
-        - from the terminal, navigate to the `db/seeding` folder and execute the `seed-analytics-data.php` file
-        - from the browser, login as admin and navigate to `localhost/internhub/db/seeding/seed-analytics-data.php`
+    - If you want to test the analytical reports, you can:
+        - From the browser, login as admin and navigate to `localhost/internhub/db/seeding/seed-sample-data.php`
     - When you are done testing, you can remove the sample data by executing the `unseed-analytics-data.php` file in the same way
 
 ### 4. Login
@@ -68,15 +62,15 @@ A simple full-stack web application for Internship application and tracking, dev
      `http://localhost/internhub/pages/login.php`
 2. Use the default credentials below to log in
 
-    #### Default User Credentials
+    #### Default User Credentials (automatically created)
         - Admin
             - username: admin
             - password: admin
 
-        - Student
-            - email: uoc@example.com
+        - University Representative
+            - email: uoc@university.edu
             - password: uoc
 
-        - Company
-            - email: hr@codalyth.com
-            - password: codalyth
+        - Company Representative
+            - email: hr@company.com
+            - password: company

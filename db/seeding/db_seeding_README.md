@@ -1,25 +1,35 @@
 # Database Seeding Scripts
 
-This directory contains scripts to set up default system users and generate sample data for testing the analytics dashboard.
+This directory contains scripts to generate sample data for testing the analytics dashboard. Default system users and their profiles are automatically created when the database schema is imported.
 
 ## Files
 
-- **`seed-default-users.php`** - Creates essential system users (admin, university, company moderator)
 - **`seed-sample-data.php`** - Generates comprehensive sample data for analytics testing
-- **`unseed-analytics-data.php`** - Removes all sample data and restores the database to its clean state (leaving only the default system users and any manually created legitimate data in the database)
+- **`unseed-analytics-data.php`** - Removes all sample data and restores the database to its clean state
+
+## Default Users (Automatically Created)
+
+When you import the `schema.sql` file, the following default users and profiles are automatically created:
+
+### System Users & Profiles
+- **Admin** (`admin/admin`) - System administrator with full access
+- **University Representative** (`uoc/uoc`) - Student profile: University of Colombo, Computer Science, 3rd year
+- **Company Representative** (`company/company`) - Company profile: InternHub Default Company (verified)
+
+⚠️ **Change these default passwords after first login for security!**
 
 ## Usage
 
-### 1. Create Default System Users
+### 1. Import Database Schema (Automatic Setup)
 
-Navigate to: `http://localhost/internship-tracker/db/seeding/seed-default-users.php`
+Import the database schema which automatically creates default users:
+```sql
+mysql -u your_username -p your_database < /path/to/schema.sql
+```
 
-This creates three essential system users:
-- **Admin** (username: `admin`, password: `admin`)
-- **University** (username: `uoc`, password: `uoc`) 
-- **Company Moderator** (username: `codalyth`, password: `codalyth`)
+Or use your preferred database management tool to import `db/schema.sql`.
 
-⚠️ **Change these default passwords after first login for security!**
+The default users and profiles are created automatically during schema import.
 
 ### 2. Generate Sample Data (Optional)
 
@@ -35,10 +45,10 @@ This removes all sample data while preserving the default system users and any m
 
 ## Sample Data Details
 
-### Default System Users (3 users) (`username or email/password`)
-- **Admin User**: Full system access, user management, analytics (`admin/admin`)
-- **Student User**: Academic institution access, student oversight (`uoc@example.com/uoc`)
-- **Company Moderator**: Company verification, internship oversight (`hr@codalyth.com/codalyth`)
+### Default System Users (3 users with profiles) (`username/password`)
+- **Admin User**: Full system access, user management, analytics (`admin/admin`) - No profile needed
+- **University Representative**: Student profile with University of Colombo details (`uoc/uoc`)
+- **Company Representative**: Verified company profile for InternHub Default Company (`company/company`)
 
 ### Students (40 sample users)
 - Usernames: student001 to student040
@@ -79,9 +89,9 @@ This removes all sample data while preserving the default system users and any m
 
 ## Usage Workflow
 
-### For Production
-1. **First Time**: Run `seed-default-users.php` to create essential system users
-2. **For Testing**: Run `seed-sample-data.php` to generate analytics test data
+### For New Setup
+1. **Import Schema**: Import `db/schema.sql` to create database structure and default users
+2. **For Testing**: Run `seed-sample-data.php` to generate analytics test data  
 3. **After Testing**: Run `unseed-analytics-data.php` to clean up sample data
 4. **IMPORTANT**: Change default passwords immediately after first login for security
 
@@ -90,6 +100,8 @@ This removes all sample data while preserving the default system users and any m
 2. Test your analytics features
 3. Clean up with `unseed-analytics-data.php`
 4. Repeat as needed
+
+Note: Default users are automatically available after schema import - no additional setup required.
 
 ## Troubleshooting
 

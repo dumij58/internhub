@@ -83,6 +83,7 @@ try {
         echo "<p style='color: orange;'>⚠️ Sample data already exists. Please run unseed-analytics-data.php first to remove existing sample data.</p>\n";
         $db->rollback();
         echo "<p><a href='unseed-analytics-data.php'>Remove Existing Sample Data</a></p>\n";
+        echo "<p><a href='../../pages/admin/'>Go to Admin Dashboard</a></p>\n";
         return;
     }
     

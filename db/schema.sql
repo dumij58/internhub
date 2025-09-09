@@ -160,7 +160,6 @@ CREATE INDEX idx_notifications_user_id ON notifications(user_id);
 CREATE INDEX idx_notifications_is_read ON notifications(is_read);
 
 
-/*
 -- ====================================
 --  INSERT DEFAULT DATA
 -- ====================================
@@ -171,13 +170,17 @@ INSERT INTO user_types (type_name, type_description) VALUES
 ('student', 'Student user who can apply for internships'),
 ('company', 'Company representative who can post internships');
 
--- Create Default Users (username,password - admin, admin123; student, student123; company, company123)
+-- Create Default Users (usernames/passwords: admin/admin, uoc/uoc, company/company)
+-- Note: These are default passwords - CHANGE THEM AFTER FIRST LOGIN for security!
 INSERT INTO users (username, email, password_hash, user_type_id) VALUES
-('admin', 'admin@example.com', '$2y$10$bRJWHT4uyMDkYGpBz/PUz.BzB56rmxZHTMG7eoLNgdHgYPEepoIqG', 1),
-('student', 'student@example.com', '$2y$10$s28tVzy9K7vfqSez4aKYHuI4eeBfAyKhqwD4ZGlkMsNwYEC5f8qba', 2),
-('company', 'company@example.com', '$2y$10$eN3LQJqiTnR6aKQQDtEC4u247abHOI.H6AZIHi45eO6U93Jnr8l4e', 3);
+('admin', 'admin@internhub.com', '$2y$10$RINKjF.wPU.jMwzvshFe.OPnSdS2wRBBk.Soaf9NAqSHtm.HWdq3m', 1),
+('uoc', 'uoc@university.edu', '$2y$10$V.mAEYf.nNJI7iOSnUGKgu9VFM2WgfBoQsJJagG50PMKGP//xokPe', 2),
+('company', 'hr@company.com', '$2y$10$ZvNCGAXp7ctevkzb8hy7aepiohXDbm7fR3o/3DQzbvYfQcWvCyIWu', 3);
 
--- Create Student Profile for Default Student
-INSERT INTO student_profiles (user_id, student_id, phone, bio, university, major, year_of_study, gpa) VALUES
-(2, 'STU001', '94712808865', 'Default user for InternHub web application', 'Default University', 'Computer Science', 3, 3.50);
-*/
+-- Create Student Profile for University Representative
+INSERT INTO student_profiles (user_id, student_id, first_name, last_name, phone, university, major, year_of_study, gpa, bio) VALUES
+(2, 'UOC001', 'Default', 'Student', '+94701234567', 'University of Colombo', 'Computer Science', 3, 3.50, 'Default student account for InternHub.');
+
+-- Create Company Profile for Company Representative  
+INSERT INTO company_profiles (user_id, company_name, industry_type, company_website, company_description, address, phone_number, verified) VALUES
+(3, 'InternHub Default Company', 'Technology', 'https://internhub.com', 'Default company account for internship management and application tracking.', '123 Main Street, Colombo 03, Sri Lanka', '+94112345678', 1);
