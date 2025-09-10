@@ -59,6 +59,14 @@ CREATE TABLE company_profiles (
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
+-- Internship Categories (lookup table for internship categories)
+CREATE TABLE internship_categories (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Main Internships Table
 CREATE TABLE internships (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -82,6 +90,7 @@ CREATE TABLE internships (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (company_id) REFERENCES company_profiles(id),
+    FOREIGN KEY (category_id) REFERENCES internship_categories(id),
     FOREIGN KEY (created_by) REFERENCES users(user_id)
 );
 
@@ -184,3 +193,33 @@ INSERT INTO student_profiles (user_id, student_id, first_name, last_name, phone,
 -- Create Company Profile for Company Representative  
 -- INSERT INTO company_profiles (user_id, company_name, industry_type, company_website, company_description, address, phone_number, verified) VALUES
 -- (3, 'InternHub Default Company', 'Technology', 'https://internhub.com', 'Default company account for internship management and application tracking.', '123 Main Street, Colombo 03, Sri Lanka', '+94112345678', 1);
+
+
+-- Default Internship Categories
+INSERT INTO internship_categories (name, description) VALUES
+('Software Development', 'Internships focused on software engineering, development and programming'),
+('Marketing', 'Internships in marketing, communications, and promotions'),
+('Design', 'Internships related to UI/UX, graphic and product design'),
+('Data Science', 'Internships in data analysis, machine learning, and data engineering'),
+('AI / Machine Learning', 'Internships in artificial intelligence, deep learning, and ML research'),
+('DevOps / SRE', 'Internships covering deployment, CI/CD, and site reliability'),
+('Quality Assurance', 'Internships in software testing, QA automation and test engineering'),
+('Product Management', 'Internships in product planning, roadmaps, and stakeholder coordination'),
+('Business Analysis', 'Internships focused on requirements gathering and business processes'),
+('Sales', 'Internships in sales, business development, and account management'),
+('Human Resources', 'Internships in recruitment, HR operations, and people programs'),
+('Finance & Accounting', 'Internships in financial analysis, accounting, and bookkeeping'),
+('Customer Support', 'Internships handling customer success, support and helpdesk'),
+('Content & Copywriting', 'Internships for content creation, blogging and copywriting'),
+('Research & Development', 'Internships in R&D, technical research and prototyping'),
+('Cybersecurity', 'Internships in information security, risk and penetration testing'),
+('Embedded Systems', 'Internships working on firmware, IoT and embedded hardware'),
+('Cloud Engineering', 'Internships for cloud platforms, architecture and operations'),
+('Mobile Development', 'Internships for iOS, Android and mobile app development'),
+('Web Development', 'Internships in frontend, backend and full-stack web development'),
+('Project Management', 'Internships assisting project planning and delivery'),
+('Operations', 'Internships in business operations, logistics and process improvement'),
+('Healthcare', 'Internships related to healthcare, medical tech and health administration'),
+('Environmental / Sustainability', 'Internships focusing on sustainability, environment and policy'),
+('Graphics & Multimedia', 'Internships in animation, video, and multimedia production'),
+('Blockchain', 'Internships in distributed ledger technology, smart contracts and crypto');
