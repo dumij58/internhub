@@ -35,12 +35,13 @@ global $root_path, $pages_path, $assets_path;
                             <?php elseif ($_SESSION['role'] === 'company'): ?>
                                 <!-- Company Navigation -->
                                 <a href="<?php echo $pages_path; ?>/company/dashboard.php">Company Dashboard</a>
-                                <a href="<?php echo $pages_path; ?>/company/post_internship.php">Post Internships</a>
-                                <a href="<?php echo $pages_path; ?>/company/view_applications.php">Received Applications</a>
+                                <a href="<?php echo $pages_path; ?>/company/manage_internships.php">Manage Internships</a>
+                                <a href="<?php echo $pages_path; ?>/company/view_applications.php">Review Applications</a>
                             <?php elseif ($_SESSION['role'] === 'admin'): ?>
                                 <!-- Admin Navigation -->
                                 <a href="<?php echo $pages_path; ?>/admin/index.php">Dashboard</a>
                                 <a href="<?php echo $pages_path; ?>/admin/analytics.php">Analytics</a>
+                                <a href="<?php echo $pages_path; ?>/admin/Notifications.php">Notifications</a>
                                 <a href="<?php echo $pages_path; ?>/admin/system_logs.php">Logs</a>
                             <?php endif; ?>
                             <?php if ($_SESSION['role'] !== 'admin'): ?>
