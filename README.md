@@ -22,11 +22,13 @@ A simple full-stack web application for Internship application and tracking, dev
     1. Download and install XAMPP from [Apache Friends](https://www.apachefriends.org/index.html)
     2. Start Apache and MySQL from the XAMPP control panel
 
-    > [!WARNING]
-    > If any other version of PHP, MySQL, or Apache is installed on your machine, please ensure that they are not running to avoid port conflicts.
+> [!WARNING]
+> If any other version of PHP, MySQL, or Apache is installed on your machine, please ensure that they are not running to avoid port conflicts.
+>
 
-    > [!WARNING]
-    > Using a version of XAMPP other than v8.2.4 may lead to compatibility issues.
+> [!WARNING]
+> Using a version of XAMPP other than v8.2.4 may lead to compatibility issues.
+
 
 ### 2. Clone the repository
 
