@@ -87,6 +87,7 @@ require_once '../../includes/header.php';
     <div class="card">
         <div class="card-body">
             <div class="profile-header">
+                <!-- Company Logo -->
                 <div class="company-logo">
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-building" viewBox="0 0 16 16">
                         <path fill-rule="evenodd" d="M14.763.075A.5.5 0 0 1 15 .5v15a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5V14h-1v1.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V10a.5.5 0 0 1 .342-.474L6 7.64V4.5a.5.5 0 0 1 .276-.447l8-4a.5.5 0 0 1 .487.022ZM6 8.694 1 10.36V15h5V8.694ZM7 15h2v-1.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5V15h2V1.309l-7 3.5V15Z"/>
@@ -94,6 +95,7 @@ require_once '../../includes/header.php';
                     </svg>
                 </div>
                 <div class="company-info">
+                    <!-- Company Info -->
                     <h1><?php echo escape($company_profile['company_name'] ?? 'Company Name'); ?></h1>
                     <div class="company-meta">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-diagram-3" viewBox="0 0 16 16">
@@ -129,7 +131,9 @@ require_once '../../includes/header.php';
                         </span>
                     <?php endif; ?>
                 </div>
+                <!-- Shows a progress bar for profile completion -->
                 <div class="profile-actions">
+                    <?php if ($completion_percentage < 100): ?>
                     <div class="completion-indicator">
                         <small>Profile Completion</small>
                         <div class="progress-bar">
@@ -137,14 +141,18 @@ require_once '../../includes/header.php';
                         </div>
                         <small><?php echo $completion_percentage; ?>% Complete</small>
                     </div>
+                    <?php endif; ?>
                     <div class="action-buttons">
-                        <button class="btn btn-primary btn-sm" onclick="openEditModal()">
+                        <!-- Edit Profile Button -->
+                        <button class="btn btn-primary btn-sm btn-icon" onclick="openEditModal()">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
                                 <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708L4.5 15.207a.5.5 0 0 1-.146.103l-3 1a.5.5 0 0 1-.595-.595l1-3a.5.5 0 0 1 .103-.146L12.146.146zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293L12.793 5.5zM9.854 8.146a.5.5 0 0 1-.708.708L5.5 5.207l-.646.647.646.646a.5.5 0 0 1-.708.708L3.5 5.914a.5.5 0 0 1 0-.708l1-1a.5.5 0 0 1 .708 0L9.854 8.146z"/>
                             </svg>
                             Edit Profile
                         </button>
-                        <button class="btn btn-primary btn-sm" onclick="openChangePasswordModal()">
+
+                        <!-- Change Password Button -->
+                        <button class="btn btn-primary btn-sm btn-icon" onclick="openChangePasswordModal()">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-key" viewBox="0 0 16 16">
                                 <path d="M0 8a4 4 0 0 1 7.465-2H14a.5.5 0 0 1 .354.146l1.5 1.5a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0L13 9.207l-.646.647a.5.5 0 0 1-.708 0L11 9.207l-.646.647a.5.5 0 0 1-.708 0L9 9.207l-.646.647A.5.5 0 0 1 8 10h-.535A4 4 0 0 1 0 8zm4-3a3 3 0 1 0 2.712 4.285A.5.5 0 0 1 7.163 9h.63l.853-.854a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .708 0l.646.647.793-.793-1-1h-6.63a.5.5 0 0 1-.451-.285A3 3 0 0 0 4 5z"/>
                                 <path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
@@ -229,17 +237,6 @@ require_once '../../includes/header.php';
                 </div>
                 <h3>Review Applications</h3>
                 <p>Review and manage student applications</p>
-            </a>
-            
-            <a href="update_profile.php" class="action-card secondary">
-                <div class="action-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-building" viewBox="0 0 16 16">
-                        <path fill-rule="evenodd" d="M14.763.075A.5.5 0 0 1 15 .5v15a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5V14h-1v1.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V10a.5.5 0 0 1 .342-.474L6 7.64V4.5a.5.5 0 0 1 .276-.447l8-4a.5.5 0 0 1 .487.022ZM6 8.694 1 10.36V15h5V8.694ZM7 15h2v-1.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5V15h2V1.309l-7 3.5V15Z"/>
-                        <path d="M2 11h1v1H2v-1Zm2 0h1v1H4v-1Zm-2 2h1v1H2v-1Zm2 0h1v1H4v-1Zm4-4h1v1H8V9Zm2 0h1v1h-1V9Zm-2 2h1v1H8v-1Zm2 0h1v1h-1v-1Zm2-2h1v1h-1V9Zm0 2h1v1h-1v-1ZM8 7h1v1H8V7Zm2 0h1v1h-1V7Zm2 0h1v1h-1V7ZM8 5h1v1H8V5Zm2 0h1v1h-1V5Zm2 0h1v1h-1V5Zm0-2h1v1h-1V3Z"/>
-                    </svg>
-                </div>
-                <h3>Update Profile</h3>
-                <p>Keep your company information up to date</p>
             </a>
         </div>
     </div>

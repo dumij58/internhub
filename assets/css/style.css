@@ -511,14 +511,18 @@ form p a {
 
 /* Button styles */
 .btn {
-    display: inline-block;
-    text-align: center;
-    vertical-align: middle;
+    border-radius: 8px;
+    padding: 0.25rem 0.5rem;
     border: 1px solid transparent;
     line-height: 1.5;
     transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-    text-decoration: none;
-    cursor: pointer;
+}
+
+.btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
 }
 
 .btn-primary {
@@ -1972,19 +1976,42 @@ summary.highlight {
 /* Checkbox and Radio Styles */
 .checkbox-group, .radio-group {
     display: flex;
-    flex-direction: column;
-    gap: 15px;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    width: 100%;
 }
 
 .checkbox-label, .radio-label {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 12px;
-    cursor: pointer;
-    padding: 15px;
+    padding: 10px;
     border: 2px solid #e9ecef;
     border-radius: 8px;
     transition: all 0.3s ease;
+    flex: 1;
+    cursor: pointer;
+    min-width: 200px;
+}
+
+.checkbox-label .label-content,
+.radio-group .label-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.checkbox-group input[type="checkbox"],
+.radio-label input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    cursor: pointer;
+    flex-shrink: 0;
+    inline-size: 15px;
 }
 
 .checkbox-label:hover, .radio-label:hover {
@@ -1992,10 +2019,17 @@ summary.highlight {
     background-color: #f8f9fa;
 }
 
-input[type="checkbox"]:checked + .checkbox-label,
-input[type="radio"]:checked + .radio-label {
+.checkbox-label:has(input:checked),
+.radio-label:has(input:checked) {
     border-color: #005c89;
     background-color: rgba(0, 92, 137, 0.05);
+}
+
+.radio-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    gap: 15px;
 }
 
 .radio-option {
@@ -2031,16 +2065,12 @@ input[type="radio"]:checked + .radio-label {
 
 /* Progress Indicator */
 .progress-indicator {
-    position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%);
+    margin: auto;
     background: white;
     padding: 20px;
     border-radius: 15px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-    z-index: 1000;
-    min-width: 400px;
+    max-width: 400px;
 }
 
 .progress-steps {
