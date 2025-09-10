@@ -48,9 +48,11 @@ CREATE TABLE company_profiles (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL UNIQUE,
     company_name VARCHAR(100) NOT NULL,
+    industry_type VARCHAR(50),
     company_website VARCHAR(255),
     company_description TEXT,
     address TEXT,
+    phone_number VARCHAR(20),
     verified BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
