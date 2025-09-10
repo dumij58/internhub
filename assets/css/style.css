@@ -567,19 +567,7 @@ form p a {
     text-align: center;
 }
 
-@media (max-width: 768px) {
 
-    .col-md-6,
-    .col-md-8,
-    .col-md-12 {
-        flex: 0 0 100%;
-        max-width: 100%;
-    }
-
-    .row {
-        flex-direction: column;
-    }
-}
 
 
 /* Other styles */
@@ -913,13 +901,14 @@ form p a {
     margin: 20px auto;
 }
 
-.help-section p:not(.welcome-text) {
+.help-section p:not(.welcome-text, .help-step p) {
     font-style: italic;
     font-weight: 700;
 
 }
 
-.step {
+.help-step p {
+    font-style: normal;
     font-size: 18px;
     margin: 20px 40px;
 }
@@ -1258,100 +1247,6 @@ summary.highlight {
     font-size: 0.875rem;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-    .profile-header {
-        flex-direction: column;
-        text-align: center;
-        gap: 15px;
-    }
-    
-    .profile-actions {
-        text-align: center;
-        width: 100%;
-    }
-    
-    .action-buttons {
-        justify-content: center;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-    
-    .content-grid {
-        grid-template-columns: 1fr;
-        gap: 20px;
-    }
-    
-    .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 15px;
-    }
-    
-    .actions-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .form-row {
-        grid-template-columns: 1fr;
-    }
-    
-    .dash-overview-grid,
-    .analytics-overview-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 15px;
-    }
-    
-    .modal-content {
-        width: 95%;
-        margin: 10px;
-        max-height: 95vh;
-    }
-    
-    .completion-indicator {
-        margin-bottom: 10px;
-    }
-}
-
-/* Mobile phones and very small screens */
-@media (max-width: 480px) {
-    .stats-grid {
-        grid-template-columns: 1fr;
-        gap: 10px;
-    }
-    
-    .dash-overview-grid,
-    .analytics-overview-grid {
-        grid-template-columns: 1fr;
-        gap: 10px;
-    }
-    
-    .profile-container {
-        padding: 10px;
-    }
-    
-    .student-photo,
-    .company-logo {
-        width: 60px;
-        height: 60px;
-        font-size: 1.5rem;
-    }
-    
-    .student-info h1,
-    .company-info h1 {
-        font-size: 1.4rem;
-    }
-    
-    .action-buttons {
-        flex-direction: column;
-        width: 100%;
-    }
-    
-    .action-buttons .btn {
-        width: 100%;
-        margin-bottom: 5px;
-    }
-}
-
 
 /* ================================= */
 /* =========== Index Page ========== */
@@ -1520,11 +1415,7 @@ summary.highlight {
     color: #007BFF;
 }
 
-@media (max-width: 768px) {
-    .container {
-        width: 95%;
-    }
-}
+
 
 
 /* ================================= */
@@ -1736,8 +1627,129 @@ summary.highlight {
     font-style: italic;
 }
 
-/* Responsive Design */
+
+
+/* ================================= */
+/* ====== Password Reset Page ====== */
+/* ================================= */
+
+.message {
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.message.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.message.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.message.info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+.form-links {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.form-links p {
+    margin: 10px 0;
+}
+
+.form-links a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.form-links a:hover {
+    text-decoration: underline;
+}
+
+
+/* ================================= */
+/* ======= Responsive Design ======= */
+/* ================================= */
+
+/* Tablets and medium screens */
 @media (max-width: 768px) {
+
+    .col-md-6,
+    .col-md-8,
+    .col-md-12 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    .row {
+        flex-direction: column;
+    }
+
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+    }
+    
+    .profile-actions {
+        text-align: center;
+        width: 100%;
+    }
+    
+    .action-buttons {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .content-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+    
+    .actions-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .dash-overview-grid,
+    .analytics-overview-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 10px;
+        max-height: 95vh;
+    }
+    
+    .completion-indicator {
+        margin-bottom: 10px;
+    }
+
+    .container {
+        width: 95%;
+    }
+    
     .dashboard-header {
         flex-direction: column;
         align-items: flex-start;
@@ -1759,5 +1771,45 @@ summary.highlight {
     
     .dashboard-section {
         padding: 20px;
+    }
+}
+
+/* Mobile phones and very small screens */
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .dash-overview-grid,
+    .analytics-overview-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .profile-container {
+        padding: 10px;
+    }
+    
+    .student-photo,
+    .company-logo {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+    }
+    
+    .student-info h1,
+    .company-info h1 {
+        font-size: 1.4rem;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .action-buttons .btn {
+        width: 100%;
+        margin-bottom: 5px;
     }
 }

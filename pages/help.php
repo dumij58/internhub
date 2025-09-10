@@ -23,7 +23,7 @@ include_once '../includes/header.php';
 
             <details>
                 <summary>Getting Started with InternHub</summary>
-                <div class="step">
+                <div class="help-step">
                     <p><b>Registration:</b> Click "Register" button on the login page and
                         fill your student details.</p>
                     <p><b>Login:</b> Click "Login" button and use your username and password
@@ -33,7 +33,7 @@ include_once '../includes/header.php';
 
             <details>
                 <summary>Find & Apply for Internships</summary>
-                <div class="step">
+                <div class="help-step">
                     <p><b>Searching:</b> Use search bar to find internships by
                         company,location or field of study.</p>
                     <p><b>Applying:</b> Click "Apply" button on any internship listing, then
@@ -43,7 +43,7 @@ include_once '../includes/header.php';
 
             <details>
                 <summary>Tracking Applications</summary>
-                <div class="step">
+                <div class="help-step">
                     <p><b>Status:</b> Check your application status in "My Applications"
                         section.</p>
                     <p><b>Updates:</b> You'll recieve an e-mail when your application status
@@ -58,7 +58,7 @@ include_once '../includes/header.php';
 
             <details>
                 <summary>System Management</summary>
-                <div class="step">
+                <div class="help-step">
                     <p><b>Login:</b> Use admin credentials to access the system.</p>
                     <p><b>User Management:</b> Add,edit or disable user accounts.</p>
                 </div>
@@ -66,7 +66,7 @@ include_once '../includes/header.php';
 
             <details>
                 <summary>Internship Management</summary>
-                <div class="step">
+                <div class="help-step">
                     <p><b>Add Internships:</b> Click "Add New" in the internship section to
                         create new internship listings.</p>
                     <p><b>Internship Listing Management:</b> Edit or remove internship
@@ -76,7 +76,7 @@ include_once '../includes/header.php';
 
             <details>
                 <summary>Reports</summary>
-                <div class="step">
+                <div class="help-step">
                     <p><b>Generate Reports:</b> Make reports using application statistics
                         and other relavant information.</p>
                     <p><b>Exporting Data:</b> Export reports as csv or pdf for further

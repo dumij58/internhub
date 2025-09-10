@@ -93,7 +93,7 @@ require_once '../../includes/header.php';
                 </div>
             </div>
             
-            <div class="btn-field">
+            <div class="btn-field-center">
                 <button type="submit" name="request_reset" class="btn-primary">Send Reset Link</button>
             </div>
         </form>
@@ -104,116 +104,6 @@ require_once '../../includes/header.php';
         </div>
     </div>
 </div>
-
-<style>
-.login-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 80vh;
-    padding: 20px;
-}
-
-.form-box {
-    background: white;
-    padding: 40px;
-    border-radius: 10px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.1);
-    width: 100%;
-    max-width: 400px;
-}
-
-.form-box h1 {
-    text-align: center;
-    margin-bottom: 30px;
-    color: #333;
-}
-
-.input-group {
-    margin-bottom: 20px;
-}
-
-.input-field {
-    margin-bottom: 15px;
-}
-
-.input-field input {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 16px;
-    box-sizing: border-box;
-}
-
-.input-field input:focus {
-    outline: none;
-    border-color: #007bff;
-}
-
-.btn-field {
-    margin-bottom: 20px;
-}
-
-.btn-primary {
-    width: 100%;
-    padding: 12px;
-    background: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.btn-primary:hover {
-    background: #0056b3;
-}
-
-.message {
-    padding: 15px;
-    margin-bottom: 20px;
-    border-radius: 5px;
-    text-align: center;
-}
-
-.message.success {
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
-}
-
-.message.error {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
-}
-
-.message.info {
-    background-color: #d1ecf1;
-    color: #0c5460;
-    border: 1px solid #bee5eb;
-}
-
-.form-links {
-    text-align: center;
-    margin-top: 20px;
-}
-
-.form-links p {
-    margin: 10px 0;
-}
-
-.form-links a {
-    color: #007bff;
-    text-decoration: none;
-}
-
-.form-links a:hover {
-    text-decoration: underline;
-}
-</style>
 
 <?php
 // Include footer
