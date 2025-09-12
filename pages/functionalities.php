@@ -70,9 +70,7 @@ include_once '../includes/header.php';
         <li>Send notifications or announcements to students.</li>
         <li>Monitor statistics and upcoming deadlines.</li>
     </ul>
-    <p class="alert">
-        Go to the <a href="admin.html" class="link">Admin Page</a> to perform these actions.
-    </p>
+    
 </section>
 
 <?php include_once '../includes/footer.php'; ?>
