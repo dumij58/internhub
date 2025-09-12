@@ -8,6 +8,13 @@ $page_title = 'About Us';
 require_once '../includes/header.php';
 ?>
 
+<style>
+    body {
+        background: url('<?php echo $assets_path; ?>/images/aboutus.jpg') no-repeat center center fixed;
+        background-size: cover;
+    }
+</style>
+
 <section> 
     <div class="container">
         <section class="section">

@@ -2,6 +2,13 @@
 include_once '../includes/header.php';
 ?>
 
+<style>
+    body {
+        background: url('<?php echo $assets_path; ?>/images/functionalities.jpg') no-repeat center center fixed;
+        background-size: cover;
+    }
+</style>
+
 <section class="func-container func-card">
     <h1>System Functionalities</h1>
     <p>
