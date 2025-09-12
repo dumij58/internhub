@@ -36,7 +36,7 @@ require_once 'includes/header.php';
         <div class="hero-content">
             <h2>Launch Your Career with Your Dream Internship</h2>
             <p>Find and apply for internships in a seamless, all-in-one platform. Your next big opportunity is just a click away.</p>
-            <a href="application.html" class="cta-button">Apply Now</a>
+            <a href="<?php echo $pages_path . '/auth/login.php'?>" class="cta-button">Apply Now</a>
         </div>
         <div class="hero-image">
         </div>
