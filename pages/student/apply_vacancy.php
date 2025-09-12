@@ -214,6 +214,31 @@ require_once '../../includes/header.php';
         </div>
     </div>
 
+    <!-- Progress Indicator -->
+    <div class="progress-indicator">
+        <div class="progress-steps">
+            <div class="progress-step active" data-step="1">
+                <span class="step-num">1</span>
+                <span class="step-label">Profile</span>
+            </div>
+            <div class="progress-step" data-step="2">
+                <span class="step-num">2</span>
+                <span class="step-label">Cover Letter</span>
+            </div>
+            <div class="progress-step" data-step="3">
+                <span class="step-num">3</span>
+                <span class="step-label">Availability</span>
+            </div>
+            <div class="progress-step" data-step="4">
+                <span class="step-num">4</span>
+                <span class="step-label">Submit</span>
+            </div>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+    </div>
+
     <!-- Application Form -->
     <form id="applicationForm" method="POST" class="application-form">
         <!-- Step 1: Personal Information Review -->
@@ -304,7 +329,7 @@ require_once '../../includes/header.php';
 
                     <div class="step-navigation">
                         <div></div>
-                        <button type="button" class="btn btn-primary" onclick="nextStep()">
+                        <button type="button" class="btn btn-primary btn-icon" onclick="nextStep()">
                             Continue to Cover Letter
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
                                 <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
@@ -343,13 +368,13 @@ require_once '../../includes/header.php';
                     </div>
 
                     <div class="step-navigation">
-                        <button type="button" class="btn btn-secondary" onclick="prevStep()">
+                        <button type="button" class="btn btn-secondary btn-icon" onclick="prevStep()">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
                                 <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5a.5.5 0 0 0 .5-.5z"/>
                             </svg>
                             Previous
                         </button>
-                        <button type="button" class="btn btn-primary" onclick="nextStep()">
+                        <button type="button" class="btn btn-primary btn-icon" onclick="nextStep()">
                             Continue to Availability
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
                                 <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
@@ -412,13 +437,13 @@ require_once '../../includes/header.php';
                     </div>
 
                     <div class="step-navigation">
-                        <button type="button" class="btn btn-secondary" onclick="prevStep()">
+                        <button type="button" class="btn btn-secondary btn-icon" onclick="prevStep()">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
                                 <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5a.5.5 0 0 0 .5-.5z"/>
                             </svg>
                             Previous
                         </button>
-                        <button type="button" class="btn btn-primary" onclick="nextStep()">
+                        <button type="button" class="btn btn-primary btn-icon" onclick="nextStep()">
                             Review Application
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
                                 <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
@@ -501,7 +526,7 @@ require_once '../../includes/header.php';
                     </div>
 
                     <div class="step-navigation">
-                        <button type="button" class="btn btn-secondary" onclick="prevStep()">
+                        <button type="button" class="btn btn-secondary btn-icon" onclick="prevStep()">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
                                 <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5a.5.5 0 0 0 .5-.5z"/>
                             </svg>
@@ -514,30 +539,6 @@ require_once '../../includes/header.php';
         </div>
     </form>
 
-    <!-- Progress Indicator -->
-    <div class="progress-indicator">
-        <div class="progress-steps">
-            <div class="progress-step active" data-step="1">
-                <span class="step-num">1</span>
-                <span class="step-label">Profile</span>
-            </div>
-            <div class="progress-step" data-step="2">
-                <span class="step-num">2</span>
-                <span class="step-label">Cover Letter</span>
-            </div>
-            <div class="progress-step" data-step="3">
-                <span class="step-num">3</span>
-                <span class="step-label">Availability</span>
-            </div>
-            <div class="progress-step" data-step="4">
-                <span class="step-num">4</span>
-                <span class="step-label">Submit</span>
-            </div>
-        </div>
-        <div class="progress-bar">
-            <div class="progress-fill" id="progressFill"></div>
-        </div>
-    </div>
 </div>
 
 <style>
@@ -686,7 +687,7 @@ require_once '../../includes/header.php';
 
 .info-item {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-around;
     align-items: center;
     padding: 0.5rem 0;
     font-size: 0.9rem;
@@ -819,39 +820,6 @@ require_once '../../includes/header.php';
     color: #666;
     font-size: 0.9rem;
     line-height: 1.4;
-}
-
-.progress-indicator {
-    position: fixed;
-    bottom: 2rem;
-    right: 2rem;
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 0.5rem;
-    padding: 1rem;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    min-width: 200px;
-}
-
-.progress-steps {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 0.5rem;
-}
-
-.progress-step {
-    text-align: center;
-    flex: 1;
-}
-
-.progress-step.active .step-num {
-    background: #007bff;
-    color: white;
-}
-
-.progress-step.completed .step-num {
-    background: #28a745;
-    color: white;
 }
 
 .step-num {

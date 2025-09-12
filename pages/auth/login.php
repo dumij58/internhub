@@ -26,6 +26,13 @@ global $assets_path;
 require_once '../../includes/header.php';
 ?>
 
+<style>
+    body {
+        background: url('<?php echo $assets_path; ?>/images/login_background.jpg') no-repeat center center fixed;
+        background-size: cover;
+    }
+</style>
+
 <div class="login-container">
     <div class="form-box">
         <h1 id="title">Sign In</h1>
