@@ -14,6 +14,7 @@ global $root_path, $pages_path, $assets_path;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo escape($current_page_title); ?> - InternHub</title>
+    <link rel="icon" type="image/webp" href="<?php echo $assets_path; ?>/images/logo.webp">
     <link rel="stylesheet" href="<?php echo $assets_path; ?>/css/style.css">
 </head>
 <body>
