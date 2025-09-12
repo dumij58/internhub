@@ -100,7 +100,9 @@ CREATE TABLE applications (
     student_id INT NOT NULL, -- Links to users table
     resume_path VARCHAR(255),
     additional_documents TEXT, -- JSON array of file paths
+    additional_info TEXT,
     status ENUM('draft', 'submitted', 'under_review', 'rejected', 'accepted') DEFAULT 'draft',
+    cover_letter TEXT,
     application_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     reviewed_date TIMESTAMP NULL,
     reviewed_by INT NULL,

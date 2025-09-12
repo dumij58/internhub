@@ -120,9 +120,6 @@ require_once '../../includes/header.php';
                             </span>
                             <small class="text-muted">Applied on <?php echo date('M j, Y', strtotime($user_application['application_date'])); ?></small>
                         </div>
-                        <a href="my_applications.php" class="btn btn-outline-primary">
-                            View My Application
-                        </a>
                     <?php else: ?>
                         <?php if ($internship['days_left'] > 0): ?>
                             <div class="deadline-warning">

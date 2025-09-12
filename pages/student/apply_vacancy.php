@@ -71,8 +71,6 @@ if (!$student_profile) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $cover_letter = trim($_POST['cover_letter']);
-        $availability_start = $_POST['availability_start'];
-        $availability_end = $_POST['availability_end'];
         $additional_info = trim($_POST['additional_info']);
         $status = isset($_POST['save_draft']) ? 'draft' : 'submitted';
 
@@ -83,32 +81,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (empty($cover_letter)) {
                 $errors[] = 'Cover letter is required for submission';
             }
-            if (empty($availability_start)) {
-                $errors[] = 'Availability start date is required';
-            }
-            if (!empty($availability_start) && strtotime($availability_start) < time()) {
-                $errors[] = 'Availability start date must be in the future';
-            }
-            if (!empty($availability_end) && !empty($availability_start) && 
-                strtotime($availability_end) <= strtotime($availability_start)) {
-                $errors[] = 'Availability end date must be after start date';
-            }
         }
 
         if (empty($errors)) {
             // Insert application
             $sql = "INSERT INTO applications (
-                internship_id, student_id, cover_letter, availability_start, 
-                availability_end, additional_info, status, application_date
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())";
+                internship_id, student_id, cover_letter, additional_info, status, application_date
+            ) VALUES (?, ?, ?, ?, ?, NOW())";
 
             $stmt = $db->prepare($sql);
             $stmt->execute([
                 $internship_id,
                 $user_id,
                 $cover_letter,
-                $availability_start,
-                $availability_end,
                 $additional_info,
                 $status
             ]);
@@ -227,10 +212,6 @@ require_once '../../includes/header.php';
             </div>
             <div class="progress-step" data-step="3">
                 <span class="step-num">3</span>
-                <span class="step-label">Availability</span>
-            </div>
-            <div class="progress-step" data-step="4">
-                <span class="step-num">4</span>
                 <span class="step-label">Submit</span>
             </div>
         </div>
@@ -316,15 +297,6 @@ require_once '../../includes/header.php';
                             <?php endif; ?>
                         </div>
                         <?php endif; ?>
-
-                        <div class="profile-actions">
-                            <a href="update_profile.php" class="btn btn-outline-primary btn-sm" target="_blank">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
-                                    <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708L4.5 15.207a.5.5 0 0 1-.146.103l-3 1a.5.5 0 0 1-.595-.595l1-3a.5.5 0 0 1 .103-.146L12.146.146zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293L12.793 5.5zM9.854 8.146a.5.5 0 0 1-.708.708L5.5 5.207l-.646.647.646.646a.5.5 0 0 1-.708.708L3.5 5.914a.5.5 0 0 1 0-.708l1-1a.5.5 0 0 1 .708 0L9.854 8.146z"/>
-                                </svg>
-                                Edit Profile
-                            </a>
-                        </div>
                     </div>
 
                     <div class="step-navigation">
@@ -367,63 +339,6 @@ require_once '../../includes/header.php';
                         </div>
                     </div>
 
-                    <div class="step-navigation">
-                        <button type="button" class="btn btn-secondary btn-icon" onclick="prevStep()">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
-                                <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5a.5.5 0 0 0 .5-.5z"/>
-                            </svg>
-                            Previous
-                        </button>
-                        <button type="button" class="btn btn-primary btn-icon" onclick="nextStep()">
-                            Continue to Availability
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
-                                <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Step 3: Availability -->
-        <div class="form-step" id="step3">
-            <div class="card">
-                <div class="card-header">
-                    <h3>
-                        <span class="step-number">3</span>
-                        Availability
-                    </h3>
-                    <p>When are you available to start the internship?</p>
-                </div>
-                <div class="card-body">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="availability_start" class="form-label">
-                                Available Start Date *
-                                <small>When can you start the internship?</small>
-                            </label>
-                            <input type="date" 
-                                   id="availability_start" 
-                                   name="availability_start" 
-                                   class="form-control"
-                                   min="<?php echo date('Y-m-d'); ?>"
-                                   value="<?php echo escape($_POST['availability_start'] ?? ''); ?>"
-                                   required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="availability_end" class="form-label">
-                                Available End Date
-                                <small>When would you need to finish? (Optional)</small>
-                            </label>
-                            <input type="date" 
-                                   id="availability_end" 
-                                   name="availability_end" 
-                                   class="form-control"
-                                   value="<?php echo escape($_POST['availability_end'] ?? ''); ?>">
-                        </div>
-                    </div>
-
                     <div class="form-group">
                         <label for="additional_info" class="form-label">
                             Additional Information
@@ -454,12 +369,12 @@ require_once '../../includes/header.php';
             </div>
         </div>
 
-        <!-- Step 4: Review & Submit -->
-        <div class="form-step" id="step4">
+        <!-- Step 3: Review & Submit -->
+        <div class="form-step" id="step3">
             <div class="card">
                 <div class="card-header">
                     <h3>
-                        <span class="step-number">4</span>
+                        <span class="step-number">3</span>
                         Review & Submit
                     </h3>
                     <p>Review your application before submitting</p>
@@ -471,23 +386,7 @@ require_once '../../includes/header.php';
                             <div class="preview-content" id="coverLetterPreview">
                                 <!-- Will be populated by JavaScript -->
                             </div>
-                        </div>
 
-                        <div class="preview-section">
-                            <h4>Availability</h4>
-                            <div class="preview-content">
-                                <div class="preview-item">
-                                    <strong>Start Date:</strong>
-                                    <span id="startDatePreview">Not specified</span>
-                                </div>
-                                <div class="preview-item">
-                                    <strong>End Date:</strong>
-                                    <span id="endDatePreview">Not specified</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="preview-section">
                             <h4>Additional Information</h4>
                             <div class="preview-content" id="additionalInfoPreview">
                                 Not provided
@@ -913,7 +812,7 @@ require_once '../../includes/header.php';
 
 <script>
 let currentStep = 1;
-const totalSteps = 4;
+const totalSteps = 3;
 
 function showStep(step) {
     // Hide all steps
@@ -944,7 +843,7 @@ function nextStep() {
             showStep(currentStep);
             
             // Update preview if on review step
-            if (currentStep === 4) {
+            if (currentStep === 3) {
                 updatePreview();
             }
         }
@@ -967,13 +866,6 @@ function validateStep(step) {
                 return false;
             }
             break;
-        case 3:
-            const startDate = document.getElementById('availability_start').value;
-            if (!startDate) {
-                alert('Please specify your availability start date.');
-                return false;
-            }
-            break;
     }
     return true;
 }
@@ -992,20 +884,6 @@ function updatePreview() {
         coverLetter.replace(/\n/g, '<br>') : 
         '<em>No cover letter written</em>';
     
-    // Start date preview
-    const startDate = document.getElementById('availability_start').value;
-    const startDatePreview = document.getElementById('startDatePreview');
-    startDatePreview.textContent = startDate ? 
-        new Date(startDate).toLocaleDateString() : 
-        'Not specified';
-    
-    // End date preview
-    const endDate = document.getElementById('availability_end').value;
-    const endDatePreview = document.getElementById('endDatePreview');
-    endDatePreview.textContent = endDate ? 
-        new Date(endDate).toLocaleDateString() : 
-        'Not specified';
-    
     // Additional info preview
     const additionalInfo = document.getElementById('additional_info').value;
     const additionalInfoPreview = document.getElementById('additionalInfoPreview');
@@ -1018,19 +896,6 @@ function updatePreview() {
 document.getElementById('cover_letter').addEventListener('input', function() {
     const charCount = this.value.length;
     document.getElementById('charCount').textContent = charCount;
-});
-
-// Date validation
-document.getElementById('availability_start').addEventListener('change', function() {
-    const startDate = this.value;
-    const endDateInput = document.getElementById('availability_end');
-    
-    if (startDate) {
-        endDateInput.min = startDate;
-        if (endDateInput.value && endDateInput.value <= startDate) {
-            endDateInput.value = '';
-        }
-    }
 });
 
 // Initialize
@@ -1052,17 +917,10 @@ document.getElementById('applicationForm').addEventListener('submit', function(e
     if (!isDraft) {
         // Validate required fields for submission
         const coverLetter = document.getElementById('cover_letter').value.trim();
-        const startDate = document.getElementById('availability_start').value;
         
         if (!coverLetter) {
             e.preventDefault();
             alert('Cover letter is required for submission.');
-            return;
-        }
-        
-        if (!startDate) {
-            e.preventDefault();
-            alert('Availability start date is required for submission.');
             return;
         }
         

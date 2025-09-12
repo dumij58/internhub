@@ -103,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         echo "<script>
             alert('User details saved successfully!');
-            window.location.href='../../pages/index.php';
+            window.location.href='{$pages_path}/$_SESSION[role]/dashboard.php';
         </script>";
         logActivity('User details saved successfully');
 

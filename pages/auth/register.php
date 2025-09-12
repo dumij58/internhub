@@ -2,7 +2,7 @@
 require_once '../../includes/config.php';
 $db = getDB();
 
-if ($_POST['signUp']) {
+if (isset($_POST['signUp'])) {
     $username = trim($_POST['name']);
     $email = trim($_POST['email']);
     $password = $_POST['password'];
