@@ -40,16 +40,31 @@ ini_set('display_errors', 1);
  * This provides a fallback when PATH_PREFIX is not set
  */
 function detectPathPrefix() {
-    // Get the document root and current script directory
-    $documentRoot = $_SERVER['DOCUMENT_ROOT'];
-    $currentDir = dirname(dirname(__FILE__)); // Go up from includes/ to project root
-    
-    // Calculate the relative path from document root to project root
-    $relativePath = str_replace($documentRoot, '', $currentDir);
-    
-    // Ensure it starts with / and doesn't end with /
-    $relativePath = '/' . trim($relativePath, '/');
-    
+    // Normalize paths to forward slashes for cross-platform consistency (Windows/Unix)
+    $documentRoot = isset($_SERVER['DOCUMENT_ROOT']) ? $_SERVER['DOCUMENT_ROOT'] : '';
+    $documentRoot = str_replace('\\', '/', rtrim($documentRoot, '/'));
+
+    // Go up from includes/ to project root and normalize
+    $currentDir = dirname(dirname(__FILE__));
+    $currentDir = str_replace('\\', '/', rtrim($currentDir, '/'));
+
+    $relativePath = '';
+    if ($documentRoot !== '' && strpos($currentDir, $documentRoot) === 0) {
+        // Remove document root prefix
+        $relativePath = substr($currentDir, strlen($documentRoot));
+    } else {
+        // Fallback: derive from the script name when DOCUMENT_ROOT mismatch occurs
+        $scriptName = isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : '';
+        $scriptName = str_replace('\\', '/', $scriptName);
+        // Example: /internhub/pages/auth/login.php -> /internhub
+        $relativePath = preg_replace('#/(pages|includes|assets)(/.*)?$#', '', dirname($scriptName));
+        if ($relativePath === null) {
+            $relativePath = '';
+        }
+    }
+
+    // Ensure leading slash, no trailing slash, and only forward slashes
+    $relativePath = '/' . ltrim(trim($relativePath, '/'), '/');
     return $relativePath === '/' ? '' : $relativePath;
 }
 
@@ -90,7 +105,7 @@ function getUser($username) {
     try {
         $sql = "SELECT * FROM users WHERE username = :username";
         $stmt = $db->prepare($sql);
-        $stmt->execute(['username' => $username]);
+        $stmt->execute(array('username' => $username));
         return $stmt->fetch();
     } catch (PDOException $e) {
         logActivity('Database Error in '. __FUNCTION__, $e->getMessage());
@@ -164,14 +179,14 @@ function escape($data) {
  */
 function logActivity($action, $details = null) {
     $db = getDB();
-    $user_id = $_SESSION['user_id'] ?? null;
+    $user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
     $sql = "INSERT INTO system_logs (user_id, action, details) VALUES (:uid, :action, :details)";
     $stmt = $db->prepare($sql);
-    $stmt->execute(['uid' => $user_id, 'action' => $action, 'details' => $details]);
+    $stmt->execute(array('uid' => $user_id, 'action' => $action, 'details' => $details));
 }
 
 // Helper function to get count from a table with optional conditions
-function getCount($db, $table, $condition = null, $params = []) {
+function getCount($db, $table, $condition = null, $params = array()) {
     $sql = "SELECT COUNT(*) FROM $table";
     if ($condition) {
         $sql .= " WHERE $condition";
@@ -182,7 +197,7 @@ function getCount($db, $table, $condition = null, $params = []) {
 }
 
 // Helper function to get data
-function getData($db, $sql, $params = []) {
+function getData($db, $sql, $params = array()) {
     $stmt = $db->prepare($sql);
     $stmt->execute($params);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
