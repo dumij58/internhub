@@ -11,7 +11,7 @@ This document describes the comprehensive job vacancy system implemented for the
    - Basic details (title, department, company info)
    - Internship description and requirements
    - Eligibility criteria (education level, skills, GPA)
-   - Internship details (location, duration, stipend, working hours)
+   - Internship details (location, duration, salary, working hours)
    - Application information and deadlines
 
 2. **Manage Vacancies** (`pages/company/manage_internships.php`)
@@ -92,7 +92,7 @@ db/
 - **Basic Details**: Title, department, company name, category
 - **Description**: Job description, required/preferred skills, learning outcomes
 - **Eligibility**: Education level, degree fields, year requirements, GPA
-- **Details**: Location, type, duration, dates, stipend, working hours
+- **Details**: Location, type, duration, dates, salary, working hours
 - **Application Info**: Deadline, required documents, instructions
 
 ### Student Application Form

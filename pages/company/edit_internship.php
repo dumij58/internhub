@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $responsibilities = trim($_POST['responsibilities']);
         $location = trim($_POST['location']);
         $duration_months = intval($_POST['duration_months']);
-        $stipend = floatval($_POST['stipend']);
+        $salary = floatval($_POST['salary']);
         $application_deadline = $_POST['application_deadline'];
         $start_date = $_POST['start_date'];
         $end_date = $_POST['end_date'];
@@ -118,7 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Update internship
             $sql = "UPDATE internships SET 
                     title = ?, category_id = ?, description = ?, requirements = ?, 
-                    responsibilities = ?, location = ?, duration_months = ?, stipend = ?, 
+                    responsibilities = ?, location = ?, duration_months = ?, salary = ?, 
                     application_deadline = ?, start_date = ?, end_date = ?, max_applicants = ?, 
                     status = ?, remote_option = ?, experience_level = ?, updated_at = CURRENT_TIMESTAMP
                     WHERE id = ? AND company_id = ?";
@@ -126,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $db->prepare($sql);
             $stmt->execute([
                 $title, $category_id, $description, $requirements, 
-                $responsibilities, $location, $duration_months, $stipend, 
+                $responsibilities, $location, $duration_months, $salary, 
                 $application_deadline, $start_date, $end_date, $max_applicants, 
                 $status, $remote_option, $experience_level, $internship_id, $company_profile['id']
             ]);
@@ -256,12 +256,12 @@ require_once '../../includes/header.php';
                 </div>
 
                 <div class="form-group">
-                    <label for="stipend" class="form-label">Monthly Stipend (LKR)</label>
+                    <label for="salary" class="form-label">Monthly Salary (LKR)</label>
                     <input type="number" 
                            class="form-control" 
-                           id="stipend" 
-                           name="stipend" 
-                           value="<?php echo escape($_POST['stipend'] ?? $internship['stipend']); ?>" 
+                           id="salary" 
+                           name="salary" 
+                           value="<?php echo escape($_POST['salary'] ?? $internship['salary']); ?>" 
                            min="0" 
                            step="1000">
                 </div>

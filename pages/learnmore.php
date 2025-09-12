@@ -122,7 +122,7 @@ require_once '../includes/header.php';
             <ul>
                 <li>1:1 mentorship with senior engineers</li>
                 <li>$500 monthly learning budget for courses/books</li>
-                <li>$2,000 monthly stipend</li>
+                <li>$2,000 monthly salary</li>
                 <li>Flexible work hours and remote options</li>
                 <li>Company laptop and development setup</li>
             </ul>
@@ -156,7 +156,7 @@ require_once '../includes/header.php';
             <ul>
                 <li>Mentorship from senior marketing professionals</li>
                 <li>Certificate of completion</li>
-                <li>$1,500 monthly stipend</li>
+                <li>$1,500 monthly salary</li>
                 <li>Access to premium marketing tools and software</li>
                 <li>Networking opportunities with industry professionals</li>
             </ul>
@@ -191,7 +191,7 @@ require_once '../includes/header.php';
             <ul>
                 <li>Hands-on experience with real business data</li>
                 <li>Training on advanced analytics tools</li>
-                <li>$2,200 monthly stipend</li>
+                <li>$2,200 monthly salary</li>
                 <li>Access to premium data science courses</li>
                 <li>Potential for full-time offer upon graduation</li>
             </ul>

@@ -83,15 +83,15 @@ $gpaStats = $db->query("
     WHERE gpa IS NOT NULL AND gpa > 0
 ")->fetch(PDO::FETCH_ASSOC);
 
-// Get stipend statistics
-$stipendStats = $db->query("
+// Get salary statistics
+$salaryStats = $db->query("
     SELECT 
-        AVG(stipend) as avg_stipend,
-        MIN(stipend) as min_stipend,
-        MAX(stipend) as max_stipend,
-        COUNT(stipend) as total_with_stipend
+        AVG(salary) as avg_salary,
+        MIN(salary) as min_salary,
+        MAX(salary) as max_salary,
+        COUNT(salary) as total_with_salary
     FROM internships 
-    WHERE stipend IS NOT NULL AND stipend > 0
+    WHERE salary IS NOT NULL AND salary > 0
 ")->fetch(PDO::FETCH_ASSOC);
 
 // Get recent activities
@@ -309,19 +309,19 @@ require_once '../../includes/header.php';
     </div>
 
     
-    <!-- Stipend Statistics
+    <!-- Salary Statistics
     <div class="analytics-section">
-        <h2 class="chart-title">Internship Stipend Statistics</h2>
-        <?php if ($stipendStats['total_with_stipend'] > 0): ?>
+        <h2 class="chart-title">Internship Salary Statistics</h2>
+        <?php if ($salaryStats['total_with_salary'] > 0): ?>
             <table class="data-table">
                 <tr><th>Metric</th><th>Value</th></tr>
-                <tr><td>Average Stipend</td><td>₨ <?php echo number_format($stipendStats['avg_stipend'], 2); ?></td></tr>
-                <tr><td>Highest Stipend</td><td>₨ <?php echo number_format($stipendStats['max_stipend'], 2); ?></td></tr>
-                <tr><td>Lowest Stipend</td><td>₨ <?php echo number_format($stipendStats['min_stipend'], 2); ?></td></tr>
-                <tr><td>Paid Internships</td><td><?php echo $stipendStats['total_with_stipend']; ?></td></tr>
+                <tr><td>Average Salary</td><td>₨ <?php echo number_format($salaryStats['avg_salary'], 2); ?></td></tr>
+                <tr><td>Highest Salary</td><td>₨ <?php echo number_format($salaryStats['max_salary'], 2); ?></td></tr>
+                <tr><td>Lowest Salary</td><td>₨ <?php echo number_format($salaryStats['min_salary'], 2); ?></td></tr>
+                <tr><td>Paid Internships</td><td><?php echo $salaryStats['total_with_salary']; ?></td></tr>
             </table>
         <?php else: ?>
-            <p style="color: #666; text-align: center;">No stipend data available</p>
+            <p style="color: #666; text-align: center;">No salary data available</p>
         <?php endif; ?>
     </div>
         -->
