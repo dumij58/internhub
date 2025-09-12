@@ -718,15 +718,19 @@ form p a {
 .stat-card {
     background: white;
     border-radius: 8px;
-    padding: 20px;
+    padding: 0 20px 20px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     border-left: 4px solid #0077b6;
     text-align: center;
 }
 
-.stat-card.analytics {
-    text-align: left;
+.stat-card-analytics {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     border-left: 4px solid #0077b6;
+    text-align: left;
 }
 
 .stat-card.analytics h3 {

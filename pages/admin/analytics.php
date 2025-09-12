@@ -120,38 +120,38 @@ require_once '../../includes/header.php';
 
     <!-- Overview Statistics -->
     <div class="analytics-overview-grid">
-        <div class="stat-card analytics">
+        <div class="stat-card-analytics">
             <!-- Total Users except admins -->
             <h3>Total Users</h3>
             <div class="stat-number"><?php echo number_format($totalUsers); ?></div>
             <div class="stat-label">Registered accounts</div>
         </div>
         
-        <div class="stat-card analytics">
+        <div class="stat-card-analytics">
             <h3>Students</h3>
             <div class="stat-number"><?php echo number_format($totalStudents); ?></div>
             <div class="stat-label"><?php echo $totalUsers > 0 ? round(($totalStudents/$totalUsers)*100, 1) : 0; ?>% of total users</div>
         </div>
         
-        <div class="stat-card analytics">
+        <div class="stat-card-analytics">
             <h3>Companies</h3>
             <div class="stat-number"><?php echo number_format($totalCompanies); ?></div>
             <div class="stat-label"><?php echo $verifiedCompanies; ?> verified</div>
         </div>
         
-        <div class="stat-card analytics">
+        <div class="stat-card-analytics">
             <h3>Total Internships</h3>
             <div class="stat-number"><?php echo number_format($totalInternships); ?></div>
             <div class="stat-label"><?php echo $activeInternships; ?> currently active</div>
         </div>
         
-        <div class="stat-card analytics">
+        <div class="stat-card-analytics">
             <h3>Applications</h3>
             <div class="stat-number"><?php echo number_format($totalApplications); ?></div>
             <div class="stat-label"><?php echo $acceptedApplications; ?> accepted</div>
         </div>
         
-        <div class="stat-card analytics">
+        <div class="stat-card-analytics">
             <h3>Success Rate</h3>
             <div class="stat-number"><?php echo $successRate; ?>%</div>
             <div class="stat-label">Application acceptance rate</div>
