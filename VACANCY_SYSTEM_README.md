@@ -6,7 +6,7 @@ This document describes the comprehensive job vacancy system implemented for the
 ## Features Implemented
 
 ### For Companies
-1. **Post Job Vacancies** (`pages/company/post_vacancy.php`)
+1. **Post Job Vacancies** (`pages/company/post_internship.php`)
    - Comprehensive form with all required fields
    - Basic details (title, department, company info)
    - Internship description and requirements
@@ -14,7 +14,7 @@ This document describes the comprehensive job vacancy system implemented for the
    - Internship details (location, duration, stipend, working hours)
    - Application information and deadlines
 
-2. **Manage Vacancies** (`pages/company/view_vacancies.php`)
+2. **Manage Vacancies** (`pages/company/manage_internships.php`)
    - View all posted vacancies
    - Update vacancy status (publish, close, delete)
    - See application counts for each vacancy
@@ -28,26 +28,32 @@ This document describes the comprehensive job vacancy system implemented for the
 
 ### For Students
 1. **Find Internships** (`pages/student/find_internships.php`)
-   - Browse available internship opportunities
-   - Search and filter by category, location, type
-   - View detailed vacancy information
-   - Check application status
+   - Advanced search and filtering capabilities
+   - Filter by category, location, experience level, salary, remote work
+   - Search by keywords in title or description
+   - Pagination for large result sets
+   - Detailed internship cards with key information
 
-2. **Apply for Internships** (`pages/student/apply_vacancy.php`)
-   - Comprehensive application form with:
-     - Personal information (name, email, phone, address)
-     - Academic details (university, degree, year, GPA)
-     - Skills and interests
-     - Document uploads (resume, cover letter)
-     - Portfolio links
-   - Auto-filled vacancy information
-   - File upload validation
+2. **View Internship Details** (`pages/student/view_internship.php`)
+   - Complete internship information display
+   - Company profile and details
+   - Requirements and responsibilities
+   - Application deadline and key details
+   - Similar internships recommendations
 
-3. **Track Applications** (`pages/student/my_applications.php`)
+3. **Apply for Internships** (`pages/student/apply_vacancy.php`)
+   - Multi-step application process
+   - Profile review and completion check
+   - Cover letter composition
+   - Availability scheduling
+   - Draft saving capability
+   - Application preview and submission
+
+4. **Track Applications** (`pages/student/my_applications.php`)
    - View all submitted applications
-   - Check application status
-   - Download submitted documents
-   - See application timeline
+   - Filter by application status
+   - Check application status and progress
+   - Access to application details and history
 
 ## Database Enhancements
 

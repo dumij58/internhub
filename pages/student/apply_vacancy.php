@@ -1,385 +1,1110 @@
 <?php
 require_once '../../includes/config.php';
+requireLogin();
 
-// --- Page-specific variables ---
-$page_title = 'Apply for Internship';
-global $pages_path;
-
-// Check if user is logged in and is a student
-if (!isLoggedIn() || $_SESSION['role'] !== 'student') {
-    header('Location: ' . $pages_path . '/auth/login.php?msg=Please login as a student to apply for internships');
+if ($_SESSION['role'] !== 'student') {
+    logActivity('Unauthorized Access Attempt', 'User tried to access application form');
+    header('Location: ../../pages/error.php?error_message=403 - Access denied');
     exit;
 }
 
 $db = getDB();
 $user_id = $_SESSION['user_id'];
-$success_message = '';
-$error_message = '';
+$internship_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
-// Get vacancy ID from URL
-$vacancy_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-
-if (!$vacancy_id) {
-    header('Location: find_internships.php?error=Invalid vacancy ID');
+if (!$internship_id) {
+    header('Location: find_internships.php?error=Invalid internship ID');
     exit;
 }
 
-// Get vacancy details
-$vacancy_query = "SELECT i.*, cp.company_name, ic.name as category_name 
-                  FROM internships i 
-                  JOIN company_profiles cp ON i.company_id = cp.id
-                  LEFT JOIN internship_categories ic ON i.category_id = ic.id
-                  WHERE i.id = :vacancy_id AND i.status = 'published'";
-$vacancy_stmt = $db->prepare($vacancy_query);
-$vacancy_stmt->execute(['vacancy_id' => $vacancy_id]);
-$vacancy = $vacancy_stmt->fetch();
+// Get internship details
+$internship_query = "SELECT i.*, cp.company_name, cp.industry_type,
+                            ic.name as category_name,
+                            DATEDIFF(i.application_deadline, NOW()) as days_left
+                     FROM internships i 
+                     JOIN company_profiles cp ON i.company_id = cp.id
+                     LEFT JOIN internship_categories ic ON i.category_id = ic.id
+                     WHERE i.id = ? AND i.status = 'published'";
 
-if (!$vacancy) {
-    header('Location: find_internships.php?error=Vacancy not found or no longer available');
+$stmt = $db->prepare($internship_query);
+$stmt->execute([$internship_id]);
+$internship = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$internship) {
+    $_SESSION['error_message'] = 'Internship not found or no longer available.';
+    header('Location: find_internships.php');
     exit;
 }
 
 // Check if application deadline has passed
-if (strtotime($vacancy['application_deadline']) < time()) {
-    header('Location: find_internships.php?error=Application deadline has passed');
+if ($internship['days_left'] <= 0) {
+    $_SESSION['error_message'] = 'Application deadline for this internship has passed.';
+    header('Location: view_internship.php?id=' . $internship_id);
+    exit;
+}
+
+// Check if user has already applied
+$existing_app_query = "SELECT id, status FROM applications WHERE internship_id = ? AND student_id = ?";
+$stmt = $db->prepare($existing_app_query);
+$stmt->execute([$internship_id, $user_id]);
+$existing_application = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if ($existing_application) {
+    $_SESSION['error_message'] = 'You have already applied for this internship.';
+    header('Location: my_applications.php');
     exit;
 }
 
 // Get student profile
-$student_query = "SELECT sp.*, u.email FROM student_profiles sp 
-                  JOIN users u ON sp.user_id = u.user_id 
-                  WHERE sp.user_id = :user_id";
-$student_stmt = $db->prepare($student_query);
-$student_stmt->execute(['user_id' => $user_id]);
-$student = $student_stmt->fetch();
+$profile_query = "SELECT * FROM student_profiles WHERE user_id = ?";
+$stmt = $db->prepare($profile_query);
+$stmt->execute([$user_id]);
+$student_profile = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if (!$student) {
-    header('Location: ' . $pages_path . '/auth/user_details.php?msg=Please complete your profile first');
-    exit;
-}
-
-// Check if student has already applied
-$existing_application_query = "SELECT id FROM applications WHERE internship_id = :vacancy_id AND student_id = :user_id";
-$existing_stmt = $db->prepare($existing_application_query);
-$existing_stmt->execute(['vacancy_id' => $vacancy_id, 'user_id' => $user_id]);
-$existing_application = $existing_stmt->fetch();
-
-if ($existing_application) {
-    header('Location: my_applications.php?msg=You have already applied for this internship');
+if (!$student_profile) {
+    $_SESSION['error_message'] = 'Please complete your profile before applying for internships.';
+    header('Location: update_profile.php');
     exit;
 }
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
-        // Validate required fields
-        $required_fields = ['full_name', 'email', 'phone', 'university', 'degree_program'];
-        
-        foreach ($required_fields as $field) {
-            if (empty($_POST[$field])) {
-                throw new Exception("Please fill in all required fields.");
+        $cover_letter = trim($_POST['cover_letter']);
+        $availability_start = $_POST['availability_start'];
+        $availability_end = $_POST['availability_end'];
+        $additional_info = trim($_POST['additional_info']);
+        $status = isset($_POST['save_draft']) ? 'draft' : 'submitted';
+
+        // Validation
+        $errors = [];
+
+        if ($status === 'submitted') {
+            if (empty($cover_letter)) {
+                $errors[] = 'Cover letter is required for submission';
+            }
+            if (empty($availability_start)) {
+                $errors[] = 'Availability start date is required';
+            }
+            if (!empty($availability_start) && strtotime($availability_start) < time()) {
+                $errors[] = 'Availability start date must be in the future';
+            }
+            if (!empty($availability_end) && !empty($availability_start) && 
+                strtotime($availability_end) <= strtotime($availability_start)) {
+                $errors[] = 'Availability end date must be after start date';
             }
         }
-        
-        // Handle file uploads
-        $resume_path = null;
-        $cover_letter_path = null;
-        
-        // Create uploads directory if it doesn't exist
-        $upload_dir = '../../uploads/applications/';
-        if (!is_dir($upload_dir)) {
-            mkdir($upload_dir, 0755, true);
+
+        if (empty($errors)) {
+            // Insert application
+            $sql = "INSERT INTO applications (
+                internship_id, student_id, cover_letter, availability_start, 
+                availability_end, additional_info, status, application_date
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())";
+
+            $stmt = $db->prepare($sql);
+            $stmt->execute([
+                $internship_id,
+                $user_id,
+                $cover_letter,
+                $availability_start,
+                $availability_end,
+                $additional_info,
+                $status
+            ]);
+
+            $action_text = $status === 'submitted' ? 'submitted' : 'saved as draft';
+            logActivity('Application ' . ucfirst($action_text), "Application $action_text for internship: " . $internship['title']);
+
+            $success_message = $status === 'submitted' ?
+                'Application submitted successfully! The company will review your application.' :
+                'Application saved as draft. You can complete and submit it later.';
+
+            $_SESSION['success_message'] = $success_message;
+            
+            if ($status === 'submitted') {
+                header('Location: my_applications.php');
+            } else {
+                header('Location: apply_vacancy.php?id=' . $internship_id . '&saved=1');
+            }
+            exit;
         }
-        
-        // Handle resume upload
-        if (isset($_FILES['resume']) && $_FILES['resume']['error'] === UPLOAD_ERR_OK) {
-            $resume_file = $_FILES['resume'];
-            $resume_extension = strtolower(pathinfo($resume_file['name'], PATHINFO_EXTENSION));
-            
-            if (!in_array($resume_extension, ['pdf', 'doc', 'docx'])) {
-                throw new Exception("Resume must be a PDF, DOC, or DOCX file.");
-            }
-            
-            $resume_filename = 'resume_' . $user_id . '_' . time() . '.' . $resume_extension;
-            $resume_path = $upload_dir . $resume_filename;
-            
-            if (!move_uploaded_file($resume_file['tmp_name'], $resume_path)) {
-                throw new Exception("Failed to upload resume.");
-            }
-        } else {
-            throw new Exception("Resume is required.");
-        }
-        
-        // Handle cover letter upload (optional)
-        if (isset($_FILES['cover_letter']) && $_FILES['cover_letter']['error'] === UPLOAD_ERR_OK) {
-            $cover_letter_file = $_FILES['cover_letter'];
-            $cover_letter_extension = strtolower(pathinfo($cover_letter_file['name'], PATHINFO_EXTENSION));
-            
-            if (!in_array($cover_letter_extension, ['pdf', 'doc', 'docx'])) {
-                throw new Exception("Cover letter must be a PDF, DOC, or DOCX file.");
-            }
-            
-            $cover_letter_filename = 'cover_letter_' . $user_id . '_' . time() . '.' . $cover_letter_extension;
-            $cover_letter_path = $upload_dir . $cover_letter_filename;
-            
-            if (!move_uploaded_file($cover_letter_file['tmp_name'], $cover_letter_path)) {
-                throw new Exception("Failed to upload cover letter.");
-            }
-        }
-        
-        // Prepare application data
-        $application_data = [
-            'internship_id' => $vacancy_id,
-            'student_id' => $user_id,
-            'full_name' => trim($_POST['full_name']),
-            'email' => trim($_POST['email']),
-            'phone' => trim($_POST['phone']),
-            'current_address' => trim($_POST['current_address'] ?? ''),
-            'university' => trim($_POST['university']),
-            'degree_program' => trim($_POST['degree_program']),
-            'year_of_study' => !empty($_POST['year_of_study']) ? intval($_POST['year_of_study']) : null,
-            'graduation_year' => !empty($_POST['graduation_year']) ? intval($_POST['graduation_year']) : null,
-            'gpa' => !empty($_POST['gpa']) ? floatval($_POST['gpa']) : null,
-            'key_skills' => trim($_POST['key_skills'] ?? ''),
-            'areas_of_interest' => trim($_POST['areas_of_interest'] ?? ''),
-            'resume_path' => $resume_path,
-            'cover_letter_path' => $cover_letter_path,
-            'cover_letter_text' => trim($_POST['cover_letter_text'] ?? ''),
-            'portfolio_links' => trim($_POST['portfolio_links'] ?? '')
-        ];
-        
-        // Insert application into database
-        $insert_sql = "INSERT INTO applications (
-            internship_id, student_id, full_name, email, phone, current_address,
-            university, degree_program, year_of_study, graduation_year, gpa,
-            key_skills, areas_of_interest, resume_path, cover_letter_path,
-            cover_letter_text, portfolio_links, status
-        ) VALUES (
-            :internship_id, :student_id, :full_name, :email, :phone, :current_address,
-            :university, :degree_program, :year_of_study, :graduation_year, :gpa,
-            :key_skills, :areas_of_interest, :resume_path, :cover_letter_path,
-            :cover_letter_text, :portfolio_links, 'submitted'
-        )";
-        
-        $stmt = $db->prepare($insert_sql);
-        $stmt->execute($application_data);
-        
-        logActivity('Application Submitted', "Applied for internship: " . $vacancy['title']);
-        
-        // Redirect to success page
-        header('Location: my_applications.php?success=1');
-        exit;
-        
     } catch (Exception $e) {
-        $error_message = $e->getMessage();
+        $errors[] = 'An error occurred while processing your application. Please try again.';
+        error_log($e->getMessage());
     }
 }
 
-// --- Include the header ---
+$page_title = 'Apply for ' . $internship['title'];
+
 require_once '../../includes/header.php';
 ?>
 
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-8 mx-auto">
-            <!-- Vacancy Details Card -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h4 class="mb-0">Internship Details</h4>
+<div class="profile-container">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-nav">
+        <a href="find_internships.php" class="breadcrumb-link">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+            </svg>
+            Find Internships
+        </a>
+        <span class="breadcrumb-separator">/</span>
+        <a href="view_internship.php?id=<?php echo $internship_id; ?>" class="breadcrumb-link">
+            <?php echo escape($internship['title']); ?>
+        </a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">Apply</span>
+    </div>
+
+    <?php if (isset($_GET['saved'])): ?>
+        <div class="alert alert-success">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle" viewBox="0 0 16 16">
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.061L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/>
+            </svg>
+            Application saved successfully! You can continue editing or submit when ready.
+        </div>
+    <?php endif; ?>
+
+    <?php if (isset($errors) && !empty($errors)): ?>
+        <div class="alert alert-danger">
+            <h4>Please fix the following errors:</h4>
+            <ul>
+                <?php foreach ($errors as $error): ?>
+                    <li><?php echo escape($error); ?></li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+    <?php endif; ?>
+
+    <!-- Application Header -->
+    <div class="card">
+        <div class="card-body">
+            <div class="application-header">
+                <div class="internship-info">
+                    <div class="company-logo">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-building" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M14.763.075A.5.5 0 0 1 15 .5v15a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5V14h-1v1.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V10a.5.5 0 0 1 .342-.474L6 7.64V4.5a.5.5 0 0 1 .276-.447l8-4a.5.5 0 0 1 .487.022ZM6 8.694 1 10.36V15h5V8.694ZM7 15h2v-1.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5V15h2V1.309l-7 3.5V15Z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1>Apply for <?php echo escape($internship['title']); ?></h1>
+                        <p class="company-name"><?php echo escape($internship['company_name']); ?></p>
+                        <div class="internship-meta">
+                            <span><?php echo escape($internship['location']); ?></span>
+                            <span>•</span>
+                            <span><?php echo escape($internship['category_name']); ?></span>
+                            <span>•</span>
+                            <span><?php echo $internship['duration_months']; ?> months</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <h5><?php echo escape($vacancy['title']); ?></h5>
-                    <p class="text-muted mb-2">
-                        <strong><?php echo escape($vacancy['company_name']); ?></strong> | 
-                        <?php echo escape($vacancy['department']); ?> | 
-                        <?php echo escape($vacancy['category_name']); ?>
-                    </p>
-                    <p><strong>Location:</strong> <?php echo escape($vacancy['location']); ?></p>
-                    <p><strong>Duration:</strong> <?php echo $vacancy['duration_months']; ?> months</p>
-                    <p><strong>Application Deadline:</strong> 
-                        <span class="<?php echo strtotime($vacancy['application_deadline']) < time() ? 'text-danger' : 'text-success'; ?>">
-                            <?php echo date('M d, Y', strtotime($vacancy['application_deadline'])); ?>
-                        </span>
-                    </p>
-                </div>
-            </div>
-            
-            <!-- Application Form -->
-            <div class="card">
-                <div class="card-header">
-                    <h4 class="mb-0">Application Form</h4>
-                    <p class="text-muted mb-0">Fill in your details to apply for this internship</p>
-                </div>
-                <div class="card-body">
-                    <?php if ($error_message): ?>
-                        <div class="alert alert-danger"><?php echo escape($error_message); ?></div>
-                    <?php endif; ?>
-                    
-                    <form method="POST" action="" enctype="multipart/form-data">
-                        <!-- Personal Information -->
-                        <div class="row mb-4">
-                            <div class="col-12">
-                                <h5 class="text-primary border-bottom pb-2">Personal Information</h5>
-                            </div>
-                        </div>
-                        
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="full_name" class="form-label">Full Name *</label>
-                                <input type="text" class="form-control" id="full_name" name="full_name" 
-                                       value="<?php echo escape($student['first_name'] . ' ' . $student['last_name']); ?>" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="email" class="form-label">Email Address *</label>
-                                <input type="email" class="form-control" id="email" name="email" 
-                                       value="<?php echo escape($student['email']); ?>" required>
-                            </div>
-                        </div>
-                        
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="phone" class="form-label">Phone Number *</label>
-                                <input type="tel" class="form-control" id="phone" name="phone" 
-                                       value="<?php echo escape($student['phone']); ?>" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="current_address" class="form-label">Current Address</label>
-                                <input type="text" class="form-control" id="current_address" name="current_address" 
-                                       placeholder="Optional - some companies require location info">
-                            </div>
-                        </div>
-                        
-                        <!-- Academic Details -->
-                        <div class="row mb-4">
-                            <div class="col-12">
-                                <h5 class="text-primary border-bottom pb-2">Academic Details</h5>
-                            </div>
-                        </div>
-                        
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="university" class="form-label">University / College *</label>
-                                <input type="text" class="form-control" id="university" name="university" 
-                                       value="<?php echo escape($student['university']); ?>" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="degree_program" class="form-label">Degree Program *</label>
-                                <input type="text" class="form-control" id="degree_program" name="degree_program" 
-                                       value="<?php echo escape($student['major']); ?>" required>
-                            </div>
-                        </div>
-                        
-                        <div class="row mb-3">
-                            <div class="col-md-4">
-                                <label for="year_of_study" class="form-label">Year of Study</label>
-                                <select class="form-control" id="year_of_study" name="year_of_study">
-                                    <option value="">Select Year</option>
-                                    <option value="1" <?php echo $student['year_of_study'] == 1 ? 'selected' : ''; ?>>1st Year</option>
-                                    <option value="2" <?php echo $student['year_of_study'] == 2 ? 'selected' : ''; ?>>2nd Year</option>
-                                    <option value="3" <?php echo $student['year_of_study'] == 3 ? 'selected' : ''; ?>>3rd Year</option>
-                                    <option value="4" <?php echo $student['year_of_study'] == 4 ? 'selected' : ''; ?>>4th Year</option>
-                                    <option value="5">5th Year</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="graduation_year" class="form-label">Graduation Year</label>
-                                <input type="number" class="form-control" id="graduation_year" name="graduation_year" 
-                                       min="2020" max="2030" placeholder="e.g., 2024">
-                            </div>
-                            <div class="col-md-4">
-                                <label for="gpa" class="form-label">GPA / Academic Performance</label>
-                                <input type="number" step="0.01" min="0" max="4" class="form-control" 
-                                       id="gpa" name="gpa" value="<?php echo $student['gpa']; ?>" 
-                                       placeholder="e.g., 3.5">
-                            </div>
-                        </div>
-                        
-                        <!-- Skills & Interests -->
-                        <div class="row mb-4">
-                            <div class="col-12">
-                                <h5 class="text-primary border-bottom pb-2">Skills & Interests</h5>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="key_skills" class="form-label">Key Skills</label>
-                            <textarea class="form-control" id="key_skills" name="key_skills" rows="3" 
-                                      placeholder="e.g., Python, Marketing, Photoshop, Communication"><?php echo escape($student['skills']); ?></textarea>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="areas_of_interest" class="form-label">Areas of Interest</label>
-                            <textarea class="form-control" id="areas_of_interest" name="areas_of_interest" rows="2" 
-                                      placeholder="e.g., Data Science, HR, Finance, Web Development"></textarea>
-                        </div>
-                        
-                        <!-- Application Documents -->
-                        <div class="row mb-4">
-                            <div class="col-12">
-                                <h5 class="text-primary border-bottom pb-2">Application Documents</h5>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="resume" class="form-label">Resume / CV *</label>
-                            <input type="file" class="form-control" id="resume" name="resume" 
-                                   accept=".pdf,.doc,.docx" required>
-                            <div class="form-text">Upload your resume in PDF, DOC, or DOCX format (Max 5MB)</div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="cover_letter" class="form-label">Cover Letter (Optional)</label>
-                            <input type="file" class="form-control" id="cover_letter" name="cover_letter" 
-                                   accept=".pdf,.doc,.docx">
-                            <div class="form-text">Upload a cover letter or write one below</div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="cover_letter_text" class="form-label">Cover Letter Text (Optional)</label>
-                            <textarea class="form-control" id="cover_letter_text" name="cover_letter_text" rows="4" 
-                                      placeholder="Write your cover letter here..."></textarea>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="portfolio_links" class="form-label">Portfolio Links (Optional)</label>
-                            <textarea class="form-control" id="portfolio_links" name="portfolio_links" rows="2" 
-                                      placeholder="GitHub, LinkedIn, Personal Website, etc."></textarea>
-                        </div>
-                        
-                        <!-- Vacancy-Specific Information (Auto-filled) -->
-                        <div class="row mb-4">
-                            <div class="col-12">
-                                <h5 class="text-primary border-bottom pb-2">Application Details</h5>
-                            </div>
-                        </div>
-                        
-                        <div class="row mb-3">
-                            <div class="col-md-4">
-                                <label class="form-label">Company Name</label>
-                                <input type="text" class="form-control" value="<?php echo escape($vacancy['company_name']); ?>" readonly>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Internship Title</label>
-                                <input type="text" class="form-control" value="<?php echo escape($vacancy['title']); ?>" readonly>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Application Date</label>
-                                <input type="text" class="form-control" value="<?php echo date('M d, Y'); ?>" readonly>
-                            </div>
-                        </div>
-                        
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <a href="find_internships.php" class="btn btn-secondary me-md-2">Cancel</a>
-                            <button type="submit" class="btn btn-primary">Submit Application</button>
-                        </div>
-                    </form>
+                <div class="deadline-info">
+                    <div class="deadline-warning">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clock" viewBox="0 0 16 16">
+                            <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
+                            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
+                        </svg>
+                        <?php echo $internship['days_left']; ?> days left to apply
+                    </div>
+                    <small>Deadline: <?php echo date('M j, Y', strtotime($internship['application_deadline'])); ?></small>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Application Form -->
+    <form id="applicationForm" method="POST" class="application-form">
+        <!-- Step 1: Personal Information Review -->
+        <div class="form-step active" id="step1">
+            <div class="card">
+                <div class="card-header">
+                    <h3>
+                        <span class="step-number">1</span>
+                        Review Your Profile
+                    </h3>
+                    <p>Ensure your information is complete and up-to-date</p>
+                </div>
+                <div class="card-body">
+                    <div class="profile-review">
+                        <div class="profile-section">
+                            <h4>Personal Information</h4>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <strong>Name:</strong>
+                                    <span><?php echo escape($student_profile['first_name'] . ' ' . $student_profile['last_name']); ?></span>
+                                </div>
+                                <div class="info-item">
+                                    <strong>Student ID:</strong>
+                                    <span><?php echo escape($student_profile['student_id'] ?? 'Not provided'); ?></span>
+                                </div>
+                                <div class="info-item">
+                                    <strong>Phone:</strong>
+                                    <span><?php echo escape($student_profile['phone'] ?? 'Not provided'); ?></span>
+                                </div>
+                                <div class="info-item">
+                                    <strong>University:</strong>
+                                    <span><?php echo escape($student_profile['university'] ?? 'Not provided'); ?></span>
+                                </div>
+                                <div class="info-item">
+                                    <strong>Major:</strong>
+                                    <span><?php echo escape($student_profile['major'] ?? 'Not provided'); ?></span>
+                                </div>
+                                <div class="info-item">
+                                    <strong>Year of Study:</strong>
+                                    <span><?php echo $student_profile['year_of_study'] ? 'Year ' . $student_profile['year_of_study'] : 'Not provided'; ?></span>
+                                </div>
+                                <?php if ($student_profile['gpa']): ?>
+                                <div class="info-item">
+                                    <strong>GPA:</strong>
+                                    <span><?php echo escape($student_profile['gpa']); ?></span>
+                                </div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+
+                        <?php if ($student_profile['bio'] || $student_profile['skills'] || $student_profile['portfolio_url']): ?>
+                        <div class="profile-section">
+                            <h4>Additional Information</h4>
+                            <?php if ($student_profile['bio']): ?>
+                                <div class="bio-section">
+                                    <strong>Bio:</strong>
+                                    <p><?php echo nl2br(escape($student_profile['bio'])); ?></p>
+                                </div>
+                            <?php endif; ?>
+                            
+                            <?php if ($student_profile['skills']): ?>
+                                <div class="skills-section">
+                                    <strong>Skills:</strong>
+                                    <p><?php echo escape($student_profile['skills']); ?></p>
+                                </div>
+                            <?php endif; ?>
+                            
+                            <?php if ($student_profile['portfolio_url']): ?>
+                                <div class="portfolio-section">
+                                    <strong>Portfolio:</strong>
+                                    <a href="<?php echo escape($student_profile['portfolio_url']); ?>" target="_blank">
+                                        <?php echo escape($student_profile['portfolio_url']); ?>
+                                    </a>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                        <?php endif; ?>
+
+                        <div class="profile-actions">
+                            <a href="update_profile.php" class="btn btn-outline-primary btn-sm" target="_blank">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
+                                    <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708L4.5 15.207a.5.5 0 0 1-.146.103l-3 1a.5.5 0 0 1-.595-.595l1-3a.5.5 0 0 1 .103-.146L12.146.146zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293L12.793 5.5zM9.854 8.146a.5.5 0 0 1-.708.708L5.5 5.207l-.646.647.646.646a.5.5 0 0 1-.708.708L3.5 5.914a.5.5 0 0 1 0-.708l1-1a.5.5 0 0 1 .708 0L9.854 8.146z"/>
+                                </svg>
+                                Edit Profile
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="step-navigation">
+                        <div></div>
+                        <button type="button" class="btn btn-primary" onclick="nextStep()">
+                            Continue to Cover Letter
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Cover Letter -->
+        <div class="form-step" id="step2">
+            <div class="card">
+                <div class="card-header">
+                    <h3>
+                        <span class="step-number">2</span>
+                        Cover Letter
+                    </h3>
+                    <p>Tell the company why you're interested and what you can bring to the role</p>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="cover_letter" class="form-label">
+                            Cover Letter *
+                            <small>Explain your interest in this internship and how your skills align with the requirements</small>
+                        </label>
+                        <textarea id="cover_letter" 
+                                  name="cover_letter" 
+                                  class="form-control" 
+                                  rows="12"
+                                  placeholder="Dear Hiring Manager,&#10;&#10;I am writing to express my strong interest in the <?php echo escape($internship['title']); ?> position at <?php echo escape($internship['company_name']); ?>...&#10;&#10;Please consider explaining:&#10;• Why you're interested in this specific role and company&#10;• Relevant coursework, projects, or experience&#10;• Skills that match the job requirements&#10;• What you hope to learn and contribute&#10;&#10;Thank you for considering my application.&#10;&#10;Sincerely,&#10;<?php echo escape($student_profile['first_name'] . ' ' . $student_profile['last_name']); ?>"
+                                  required><?php echo escape($_POST['cover_letter'] ?? ''); ?></textarea>
+                        <div class="character-count">
+                            <small><span id="charCount">0</span> characters</small>
+                        </div>
+                    </div>
+
+                    <div class="step-navigation">
+                        <button type="button" class="btn btn-secondary" onclick="prevStep()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5a.5.5 0 0 0 .5-.5z"/>
+                            </svg>
+                            Previous
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="nextStep()">
+                            Continue to Availability
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: Availability -->
+        <div class="form-step" id="step3">
+            <div class="card">
+                <div class="card-header">
+                    <h3>
+                        <span class="step-number">3</span>
+                        Availability
+                    </h3>
+                    <p>When are you available to start the internship?</p>
+                </div>
+                <div class="card-body">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="availability_start" class="form-label">
+                                Available Start Date *
+                                <small>When can you start the internship?</small>
+                            </label>
+                            <input type="date" 
+                                   id="availability_start" 
+                                   name="availability_start" 
+                                   class="form-control"
+                                   min="<?php echo date('Y-m-d'); ?>"
+                                   value="<?php echo escape($_POST['availability_start'] ?? ''); ?>"
+                                   required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="availability_end" class="form-label">
+                                Available End Date
+                                <small>When would you need to finish? (Optional)</small>
+                            </label>
+                            <input type="date" 
+                                   id="availability_end" 
+                                   name="availability_end" 
+                                   class="form-control"
+                                   value="<?php echo escape($_POST['availability_end'] ?? ''); ?>">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="additional_info" class="form-label">
+                            Additional Information
+                            <small>Any other information you'd like to share? (Optional)</small>
+                        </label>
+                        <textarea id="additional_info" 
+                                  name="additional_info" 
+                                  class="form-control" 
+                                  rows="4"
+                                  placeholder="• Relevant certifications or courses&#10;• Languages spoken&#10;• Part-time/full-time preferences&#10;• Transportation arrangements&#10;• Any questions about the role"><?php echo escape($_POST['additional_info'] ?? ''); ?></textarea>
+                    </div>
+
+                    <div class="step-navigation">
+                        <button type="button" class="btn btn-secondary" onclick="prevStep()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5a.5.5 0 0 0 .5-.5z"/>
+                            </svg>
+                            Previous
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="nextStep()">
+                            Review Application
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 4: Review & Submit -->
+        <div class="form-step" id="step4">
+            <div class="card">
+                <div class="card-header">
+                    <h3>
+                        <span class="step-number">4</span>
+                        Review & Submit
+                    </h3>
+                    <p>Review your application before submitting</p>
+                </div>
+                <div class="card-body">
+                    <div class="application-preview">
+                        <div class="preview-section">
+                            <h4>Cover Letter</h4>
+                            <div class="preview-content" id="coverLetterPreview">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <div class="preview-section">
+                            <h4>Availability</h4>
+                            <div class="preview-content">
+                                <div class="preview-item">
+                                    <strong>Start Date:</strong>
+                                    <span id="startDatePreview">Not specified</span>
+                                </div>
+                                <div class="preview-item">
+                                    <strong>End Date:</strong>
+                                    <span id="endDatePreview">Not specified</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="preview-section">
+                            <h4>Additional Information</h4>
+                            <div class="preview-content" id="additionalInfoPreview">
+                                Not provided
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="submission-options">
+                        <div class="option-cards">
+                            <div class="option-card draft">
+                                <div class="option-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-file-earmark" viewBox="0 0 16 16">
+                                        <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5h-2z"/>
+                                    </svg>
+                                </div>
+                                <h5>Save as Draft</h5>
+                                <p>Save your progress and continue later. You can edit and submit anytime before the deadline.</p>
+                                <button type="submit" name="save_draft" class="btn btn-outline-secondary">
+                                    Save Draft
+                                </button>
+                            </div>
+
+                            <div class="option-card submit">
+                                <div class="option-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
+                                        <path d="M15.854.146a.5.5 0 0 1 .11.54L13.026 8.28a.5.5 0 0 1-.078.115L9.793 11.55a.5.5 0 0 1-.707 0L5.93 8.393a.5.5 0 0 1-.078-.115L2.914.686a.5.5 0 0 1 .11-.54C3.167-.095 3.537-.027 3.702.17L8 5.998 12.298.17c.165-.197.535-.265.678-.024z"/>
+                                    </svg>
+                                </div>
+                                <h5>Submit Application</h5>
+                                <p>Submit your application now. The company will be notified and you'll receive a confirmation.</p>
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    Submit Application
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step-navigation">
+                        <button type="button" class="btn btn-secondary" onclick="prevStep()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5a.5.5 0 0 0 .5-.5z"/>
+                            </svg>
+                            Previous
+                        </button>
+                        <div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <!-- Progress Indicator -->
+    <div class="progress-indicator">
+        <div class="progress-steps">
+            <div class="progress-step active" data-step="1">
+                <span class="step-num">1</span>
+                <span class="step-label">Profile</span>
+            </div>
+            <div class="progress-step" data-step="2">
+                <span class="step-num">2</span>
+                <span class="step-label">Cover Letter</span>
+            </div>
+            <div class="progress-step" data-step="3">
+                <span class="step-num">3</span>
+                <span class="step-label">Availability</span>
+            </div>
+            <div class="progress-step" data-step="4">
+                <span class="step-num">4</span>
+                <span class="step-label">Submit</span>
+            </div>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+    </div>
 </div>
 
-<?php
-// --- Include the footer ---
-require_once '../../includes/footer.php';
-?>
+<style>
+.breadcrumb-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.breadcrumb-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #007bff;
+    text-decoration: none;
+}
+
+.breadcrumb-link:hover {
+    text-decoration: underline;
+}
+
+.breadcrumb-separator {
+    color: #666;
+}
+
+.breadcrumb-current {
+    color: #666;
+    font-weight: 500;
+}
+
+.application-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.internship-info {
+    display: flex;
+    gap: 1rem;
+    flex: 1;
+}
+
+.company-logo {
+    background: #f8f9fa;
+    border-radius: 0.375rem;
+    padding: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.application-header h1 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.5rem;
+    color: #333;
+}
+
+.company-name {
+    margin: 0 0 0.5rem 0;
+    color: #666;
+    font-size: 1.1rem;
+}
+
+.internship-meta {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.deadline-info {
+    text-align: right;
+}
+
+.deadline-warning {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #dc3545;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+.form-step {
+    display: none;
+    margin-bottom: 2rem;
+}
+
+.form-step.active {
+    display: block;
+}
+
+.step-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    background: #007bff;
+    color: white;
+    border-radius: 50%;
+    font-weight: 600;
+    margin-right: 0.75rem;
+}
+
+.card-header h3 {
+    display: flex;
+    align-items: center;
+    margin: 0 0 0.5rem 0;
+    font-size: 1.25rem;
+}
+
+.card-header p {
+    margin: 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.profile-review {
+    margin-bottom: 1.5rem;
+}
+
+.profile-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.profile-section:last-child {
+    border-bottom: none;
+}
+
+.profile-section h4 {
+    margin: 0 0 1rem 0;
+    color: #333;
+    font-size: 1.1rem;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 0.75rem;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    font-size: 0.9rem;
+}
+
+.info-item strong {
+    color: #333;
+    min-width: 120px;
+}
+
+.bio-section, .skills-section, .portfolio-section {
+    margin-bottom: 1rem;
+}
+
+.bio-section p, .skills-section p {
+    margin: 0.25rem 0 0 0;
+    line-height: 1.5;
+    color: #555;
+}
+
+.portfolio-section a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.portfolio-section a:hover {
+    text-decoration: underline;
+}
+
+.profile-actions {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.character-count {
+    text-align: right;
+    margin-top: 0.25rem;
+}
+
+.step-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+
+.application-preview {
+    margin-bottom: 2rem;
+}
+
+.preview-section {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    border: 1px solid #e9ecef;
+    border-radius: 0.375rem;
+    background: #f8f9fa;
+}
+
+.preview-section h4 {
+    margin: 0 0 0.75rem 0;
+    color: #333;
+    font-size: 1rem;
+}
+
+.preview-content {
+    line-height: 1.6;
+    color: #555;
+}
+
+.preview-item {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.preview-item strong {
+    min-width: 100px;
+    color: #333;
+}
+
+.submission-options {
+    margin-bottom: 2rem;
+}
+
+.option-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.option-card {
+    text-align: center;
+    padding: 1.5rem;
+    border: 2px solid #e9ecef;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+}
+
+.option-card:hover {
+    border-color: #007bff;
+    box-shadow: 0 2px 8px rgba(0,123,255,0.1);
+}
+
+.option-card.submit {
+    border-color: #007bff;
+    background: linear-gradient(135deg, #f8f9ff, #e3f2fd);
+}
+
+.option-icon {
+    margin-bottom: 1rem;
+    color: #007bff;
+}
+
+.option-card h5 {
+    margin: 0 0 0.5rem 0;
+    color: #333;
+}
+
+.option-card p {
+    margin: 0 0 1rem 0;
+    color: #666;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.progress-indicator {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    min-width: 200px;
+}
+
+.progress-steps {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.progress-step {
+    text-align: center;
+    flex: 1;
+}
+
+.progress-step.active .step-num {
+    background: #007bff;
+    color: white;
+}
+
+.progress-step.completed .step-num {
+    background: #28a745;
+    color: white;
+}
+
+.step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    background: #e9ecef;
+    color: #666;
+    border-radius: 50%;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.step-label {
+    font-size: 0.7rem;
+    color: #666;
+}
+
+.progress-bar {
+    height: 4px;
+    background: #e9ecef;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #007bff;
+    border-radius: 2px;
+    transition: width 0.3s ease;
+    width: 25%;
+}
+
+.alert {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    border-radius: 0.375rem;
+    margin-bottom: 1rem;
+}
+
+.alert-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-danger {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.alert ul {
+    margin: 0.5rem 0 0 0;
+    padding-left: 1rem;
+}
+
+@media (max-width: 768px) {
+    .application-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .deadline-info {
+        text-align: left;
+    }
+    
+    .option-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .progress-indicator {
+        position: static;
+        margin-top: 2rem;
+    }
+    
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+let currentStep = 1;
+const totalSteps = 4;
+
+function showStep(step) {
+    // Hide all steps
+    document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
+    
+    // Show current step
+    document.getElementById(`step${step}`).classList.add('active');
+    
+    // Update progress indicator
+    updateProgressIndicator(step);
+    
+    // Update progress steps
+    document.querySelectorAll('.progress-step').forEach((s, index) => {
+        s.classList.remove('active', 'completed');
+        if (index + 1 === step) {
+            s.classList.add('active');
+        } else if (index + 1 < step) {
+            s.classList.add('completed');
+        }
+    });
+}
+
+function nextStep() {
+    if (currentStep < totalSteps) {
+        // Validate current step before proceeding
+        if (validateStep(currentStep)) {
+            currentStep++;
+            showStep(currentStep);
+            
+            // Update preview if on review step
+            if (currentStep === 4) {
+                updatePreview();
+            }
+        }
+    }
+}
+
+function prevStep() {
+    if (currentStep > 1) {
+        currentStep--;
+        showStep(currentStep);
+    }
+}
+
+function validateStep(step) {
+    switch(step) {
+        case 2:
+            const coverLetter = document.getElementById('cover_letter').value.trim();
+            if (!coverLetter) {
+                alert('Please write a cover letter before proceeding.');
+                return false;
+            }
+            break;
+        case 3:
+            const startDate = document.getElementById('availability_start').value;
+            if (!startDate) {
+                alert('Please specify your availability start date.');
+                return false;
+            }
+            break;
+    }
+    return true;
+}
+
+function updateProgressIndicator(step) {
+    const progressFill = document.getElementById('progressFill');
+    const progress = (step / totalSteps) * 100;
+    progressFill.style.width = progress + '%';
+}
+
+function updatePreview() {
+    // Cover letter preview
+    const coverLetter = document.getElementById('cover_letter').value;
+    const coverLetterPreview = document.getElementById('coverLetterPreview');
+    coverLetterPreview.innerHTML = coverLetter ? 
+        coverLetter.replace(/\n/g, '<br>') : 
+        '<em>No cover letter written</em>';
+    
+    // Start date preview
+    const startDate = document.getElementById('availability_start').value;
+    const startDatePreview = document.getElementById('startDatePreview');
+    startDatePreview.textContent = startDate ? 
+        new Date(startDate).toLocaleDateString() : 
+        'Not specified';
+    
+    // End date preview
+    const endDate = document.getElementById('availability_end').value;
+    const endDatePreview = document.getElementById('endDatePreview');
+    endDatePreview.textContent = endDate ? 
+        new Date(endDate).toLocaleDateString() : 
+        'Not specified';
+    
+    // Additional info preview
+    const additionalInfo = document.getElementById('additional_info').value;
+    const additionalInfoPreview = document.getElementById('additionalInfoPreview');
+    additionalInfoPreview.innerHTML = additionalInfo ? 
+        additionalInfo.replace(/\n/g, '<br>') : 
+        '<em>Not provided</em>';
+}
+
+// Character count for cover letter
+document.getElementById('cover_letter').addEventListener('input', function() {
+    const charCount = this.value.length;
+    document.getElementById('charCount').textContent = charCount;
+});
+
+// Date validation
+document.getElementById('availability_start').addEventListener('change', function() {
+    const startDate = this.value;
+    const endDateInput = document.getElementById('availability_end');
+    
+    if (startDate) {
+        endDateInput.min = startDate;
+        if (endDateInput.value && endDateInput.value <= startDate) {
+            endDateInput.value = '';
+        }
+    }
+});
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    showStep(1);
+    
+    // Update character count on load
+    const coverLetter = document.getElementById('cover_letter');
+    if (coverLetter.value) {
+        document.getElementById('charCount').textContent = coverLetter.value.length;
+    }
+});
+
+// Form submission validation
+document.getElementById('applicationForm').addEventListener('submit', function(e) {
+    const submitButton = e.submitter;
+    const isDraft = submitButton.name === 'save_draft';
+    
+    if (!isDraft) {
+        // Validate required fields for submission
+        const coverLetter = document.getElementById('cover_letter').value.trim();
+        const startDate = document.getElementById('availability_start').value;
+        
+        if (!coverLetter) {
+            e.preventDefault();
+            alert('Cover letter is required for submission.');
+            return;
+        }
+        
+        if (!startDate) {
+            e.preventDefault();
+            alert('Availability start date is required for submission.');
+            return;
+        }
+        
+        // Confirm submission
+        if (!confirm('Are you sure you want to submit your application? You won\'t be able to edit it after submission.')) {
+            e.preventDefault();
+            return;
+        }
+    }
+});
+</script>
+
+<?php require_once '../../includes/footer.php'; ?>

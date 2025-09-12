@@ -78,7 +78,7 @@ CREATE TABLE internships (
     responsibilities TEXT,
     location VARCHAR(100),
     duration_months INT,
-    stipend DECIMAL(10,2),
+    salary DECIMAL(10,2) DEFAULT 0.00,
     application_deadline DATE,
     start_date DATE,
     end_date DATE,
@@ -172,12 +172,6 @@ CREATE INDEX idx_notifications_is_read ON notifications(is_read);
 -- ====================================
 --  INSERT DEFAULT DATA
 -- ====================================
-
--- Insert User Types
-INSERT INTO user_types (type_name, type_description) VALUES
-('admin', 'System administrator with full access'),
-('student', 'Student user who can apply for internships'),
-('company', 'Company representative who can post internships');
 
 -- Create Default Users (usernames/passwords: admin/admin, uoc/uoc, company/company)
 -- Note: These are default passwords - CHANGE THEM AFTER FIRST LOGIN for security!

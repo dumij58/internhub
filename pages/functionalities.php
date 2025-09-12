@@ -22,8 +22,8 @@ include_once '../includes/header.php';
         <li>View submitted applications on the <strong>Home</strong> page.</li>
         <li>Track application status:
             <span class="badge pending">Pending</span>,
-            <span class="badge approved">Approved</span>,
-            <span class="badge rejected">Rejected</span>.
+            <span class="badge status-accepted">Approved</span>,
+            <span class="badge status-rejected">Rejected</span>.
         </li>
         <li>Edit or withdraw applications before deadlines.</li>
         <li>Receive notifications for updates (status changes, deadlines).</li>
