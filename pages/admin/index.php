@@ -82,6 +82,15 @@ require_once '../../includes/header.php';
         
         <div class="admin-actions">
             <div class="action-card">
+                <h4>System Administration</h4>
+                <div class="action-links">
+                    <a href="<?php echo $tasks_path . '/admins.php'; ?>" class="action-link">
+                        Manage Administrators
+                    </a>
+                </div>
+            </div>
+            
+            <div class="action-card">
                 <h4>Student Management</h4>
                 <div class="action-links">
                     <a href="<?php echo $tasks_path . '/students.php'; ?>" class="action-link">
