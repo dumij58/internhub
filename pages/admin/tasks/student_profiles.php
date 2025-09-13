@@ -52,7 +52,7 @@ require_once '../../../includes/header.php';
 
 <div class="admin-panel-tasks">
     <h2>Student Profiles</h2>
-    <button onclick="document.getElementById('addStudentProfileForm').style.display='block'" class="btn btn-primary btn-rg mb-3">Add Student Profile</button>
+    <button class="add-btn btn btn-primary btn-rg mb-3">Add Student Profile</button>
     <table width="90%" align="center" class="admin-task-table">
         <tr>
             <th>ID</th>
@@ -77,24 +77,30 @@ require_once '../../../includes/header.php';
     </table>
 
     <!-- Add Student Profile Form -->
-    <form id="addStudentProfileForm" style="display:none; margin:20px 0;" method="post">
-        <h3>Add Student Profile</h3>
-        <input type="hidden" name="add_student_profile" value="1">
-        <label>First Name: <input type="text" name="first_name" required></label><br>
-        <label>Last Name: <input type="text" name="last_name" required></label><br>
-        <button type="submit" class="btn btn-primary">Add</button>
-        <button type="button" onclick="this.form.style.display='none'" class="btn">Cancel</button>
-    </form>
+    <div id="addModal" class="modal">
+        <form id="addStudentProfileForm" method="post">
+            <h3>Add Student Profile</h3>
+            <input type="hidden" name="add_student_profile" value="1">
+            <label class="admin-form-label">First Name: <input type="text" name="first_name" required></label><br>
+            <label class="admin-form-label">Last Name: <input type="text" name="last_name" required></label><br>
+            <div class="admin-form-actions">
+                <button type="submit" class="btn btn-primary">Add</button>
+                <button type="button" id="closeAddModal" class="btn">Cancel</button>
+            </div>
+        </form>
+    </div>
 
     <!-- Edit Student Profile Modal -->
-    <div id="editModal" style="display:none; position:fixed; top:20%; left:50%; transform:translate(-50%,0); background:#fff; padding:20px; border:1px solid #ccc; z-index:1000;">
+    <div id="editModal" class="modal">
         <form id="editStudentProfileForm" method="post">
             <h3>Edit Student Profile</h3>
             <input type="hidden" name="edit_id" id="edit_id">
-            <label>First Name: <input type="text" name="edit_first_name" id="edit_first_name" required></label><br>
-            <label>Last Name: <input type="text" name="edit_last_name" id="edit_last_name" required></label><br>
-            <button type="submit" class="btn btn-primary">Update</button>
-            <button type="button" id="closeEditModal" class="btn">Cancel</button>
+            <label class="admin-form-label">First Name: <input type="text" name="edit_first_name" id="edit_first_name" required></label><br>
+            <label class="admin-form-label">Last Name: <input type="text" name="edit_last_name" id="edit_last_name" required></label><br>
+            <div class="admin-form-actions">
+                <button type="submit" class="btn btn-primary">Update</button>
+                <button type="button" id="closeEditModal" class="btn">Cancel</button>
+            </div>
         </form>
     </div>
 </div>

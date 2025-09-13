@@ -160,7 +160,7 @@ require_once '../../../includes/header.php';
 
 <div class="admin-panel-tasks">
     <h2>Administrators List</h2>
-    <button onclick="document.getElementById('addAdminForm').style.display='block'" class="btn btn-primary btn-rg mb-3">Add Admin</button>
+    <button class="add-btn btn btn-primary btn-rg mb-3">Add Admin</button>
     
     <div class="warning-box mb-3">
         <strong>⚠️ Warning:</strong> Admin users have full system access. Only grant admin privileges to trusted personnel.
@@ -202,26 +202,28 @@ require_once '../../../includes/header.php';
     </table>
 
     <!-- Add Admin Form -->
-    <form id="addAdminForm" style="display:none; margin:20px 0;" method="post">
-        <h3>Add New Administrator</h3>
-        <input type="hidden" name="add_admin" value="1">
-        <div class="form-group">
-            <label>Username: <input type="text" name="username" required minlength="3" maxlength="50"></label>
-        </div>
-        <div class="form-group">
-            <label>Email: <input type="email" name="email" required></label>
-        </div>
-        <div class="form-group">
-            <label>Password: <input type="password" name="password" required minlength="6"></label>
-        </div>
-        <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Add Admin</button>
-            <button type="button" onclick="this.form.style.display='none'; this.form.reset();" class="btn btn-secondary">Cancel</button>
-        </div>
-    </form>
+    <div id="addModal" class="modal">
+        <form id="addAdminForm" method="post">
+            <h3>Add New Administrator</h3>
+            <input type="hidden" name="add_admin" value="1">
+            <div class="form-group">
+                <label>Username: <input type="text" name="username" required minlength="3" maxlength="50"></label>
+            </div>
+            <div class="form-group">
+                <label>Email: <input type="email" name="email" required></label>
+            </div>
+            <div class="form-group">
+                <label>Password: <input type="password" name="password" required minlength="6"></label>
+            </div>
+            <div class="admin-form-actions">
+                <button type="submit" class="btn btn-primary">Add Admin</button>
+                <button type="button" id="closeAddModal" class="btn btn-secondary">Cancel</button>
+            </div>
+        </form>
+    </div>
 
     <!-- Edit Admin Modal -->
-    <div id="editModal" style="display:none; position:fixed; top:20%; left:50%; transform:translate(-50%,0); background:#fff; padding:20px; border:1px solid #ccc; border-radius:8px; box-shadow:0 4px 6px rgba(0,0,0,0.1); z-index:1000; min-width:400px;">
+    <div id="editModal" class="modal">
         <form id="editAdminForm" method="post">
             <h3>Edit Administrator</h3>
             <input type="hidden" name="edit_user_id" id="edit_user_id">
@@ -231,15 +233,12 @@ require_once '../../../includes/header.php';
             <div class="form-group">
                 <label>Email: <input type="email" name="edit_email" id="edit_email" required></label>
             </div>
-            <div class="form-actions">
+            <div class="admin-form-actions">
                 <button type="submit" class="btn btn-primary">Update Admin</button>
                 <button type="button" id="closeEditModal" class="btn btn-secondary">Cancel</button>
             </div>
         </form>
     </div>
-    
-    <!-- Modal Overlay -->
-    <div id="modalOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999;"></div>
 </div>
 
 <style>
@@ -271,16 +270,11 @@ require_once '../../../includes/header.php';
     width: 100%;
     padding: 8px 12px;
     border: 1px solid #ddd;
-    border-radius: 4px;
+    border-radius: 8px;
     box-sizing: border-box;
 }
 
-.form-actions {
-    margin-top: 20px;
-    text-align: right;
-}
-
-.form-actions button {
+.admin-form-actions button {
     margin-left: 10px;
 }
 

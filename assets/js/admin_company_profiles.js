@@ -1,6 +1,17 @@
 // Handles AJAX for admin company profiles CRUD
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Add Company Profile
+    function openAddModal() {
+        document.getElementById('addModal').style.display = 'block';
+    }
+
+    document.querySelectorAll('.add-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            openAddModal();
+        });
+    });
+    
     document.getElementById('addCompanyProfileForm')?.addEventListener('submit', function(e) {
         e.preventDefault();
         const formData = new FormData(this);
@@ -66,5 +77,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.getElementById('closeEditModal')?.addEventListener('click', function() {
         document.getElementById('editModal').style.display = 'none';
+    });
+    document.getElementById('closeAddModal')?.addEventListener('click', function() {
+        document.getElementById('addModal').style.display = 'none';
     });
 });

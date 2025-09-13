@@ -1,6 +1,18 @@
 // Handles AJAX for admin student profiles CRUD
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Add Student Profile
+    function openAddModal() {
+        console.log('Opening Add Modal');
+        document.getElementById('addModal').style.display = 'block';
+    }
+
+    document.querySelectorAll('.add-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            openAddModal();
+        });
+    });
+    
     document.getElementById('addStudentProfileForm')?.addEventListener('submit', function(e) {
         e.preventDefault();
         const formData = new FormData(this);
@@ -66,5 +78,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.getElementById('closeEditModal')?.addEventListener('click', function() {
         document.getElementById('editModal').style.display = 'none';
+    });
+    document.getElementById('closeAddModal')?.addEventListener('click', function() {
+        document.getElementById('addModal').style.display = 'none';
     });
 });

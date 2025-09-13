@@ -2,6 +2,16 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     // Add Admin
+    function openAddModal() {
+        document.getElementById('addModal').style.display = 'block';
+    }
+
+    document.querySelectorAll('.add-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            openAddModal();
+        });
+    });
+    
     document.getElementById('addAdminForm')?.addEventListener('submit', function(e) {
         e.preventDefault();
         
@@ -21,8 +31,6 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             alert(data.message);
             if (data.success) {
-                this.style.display = 'none';
-                this.reset();
                 location.reload();
             }
         })
@@ -38,13 +46,11 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('edit_username').value = username;
         document.getElementById('edit_email').value = email;
         document.getElementById('editModal').style.display = 'block';
-        document.getElementById('modalOverlay').style.display = 'block';
         document.getElementById('edit_username').focus();
     }
 
     function closeEditModal() {
         document.getElementById('editModal').style.display = 'none';
-        document.getElementById('modalOverlay').style.display = 'none';
     }
 
     document.querySelectorAll('.edit-btn').forEach(btn => {
@@ -65,7 +71,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             alert(data.message);
             if (data.success) {
-                closeEditModal();
+                document.getElementById('editModal').style.display = 'none';
                 location.reload();
             }
         })
@@ -78,8 +84,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Delete Admin
     document.querySelectorAll('.delete-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-            const adminName = this.closest('tr').dataset.username;
-            if (confirm(`Are you sure you want to delete admin "${adminName}"? This action cannot be undone.`)) {
+            if (confirm('Are you sure you want to delete this admin?')) {
                 fetch('admins.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -89,23 +94,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(data => {
                     alert(data.message);
                     if (data.success) location.reload();
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred while deleting the admin.');
                 });
             }
         });
     });
 
-    // Close modal events
-    document.getElementById('closeEditModal')?.addEventListener('click', closeEditModal);
-    document.getElementById('modalOverlay')?.addEventListener('click', closeEditModal);
-    
-    // Close modal on Escape key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            closeEditModal();
-        }
+    // Close modal
+    document.getElementById('closeEditModal')?.addEventListener('click', function() {
+        document.getElementById('editModal').style.display = 'none';
+    });
+    document.getElementById('closeAddModal')?.addEventListener('click', function() {
+        document.getElementById('addModal').style.display = 'none';
     });
 });

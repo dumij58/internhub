@@ -475,6 +475,19 @@ form p a {
 }
 
 /* Form styles */
+.admin-form-actions {
+    padding: 10px 5px;
+    text-align: right;
+}
+
+.admin-form-label input{
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 8px 12px;
+}
+
 .form-label {
     display: block;
     margin-bottom: 0.5rem;
@@ -739,26 +752,26 @@ form p a {
     font-size: 1.1rem;
 }
 
-.stat-card.primary { 
-    background: rgb(0, 92, 137); 
+.stat-card.primary {
+    background: rgb(0, 92, 137);
     color: white;
     border-left: none;
 }
 
-.stat-card.info { 
-    background: #17a2b8; 
+.stat-card.info {
+    background: #17a2b8;
     color: white;
     border-left: none;
 }
 
-.stat-card.warning { 
-    background: #ffc107; 
+.stat-card.warning {
+    background: #ffc107;
     color: #212529;
     border-left: none;
 }
 
-.stat-card.success { 
-    background: #28a745; 
+.stat-card.success {
+    background: #28a745;
     color: white;
     border-left: none;
 }
@@ -1183,7 +1196,7 @@ summary.highlight {
 }
 
 .action-card.highlight::before {
-    background: #007bff; 
+    background: #007bff;
     width: 6px;
 }
 
@@ -1215,7 +1228,7 @@ summary.highlight {
 
 .action-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
 }
 
 .action-content {
@@ -1226,7 +1239,7 @@ summary.highlight {
 }
 
 .action-icon {
-    background: rgba(0,123,255,0.1);
+    background: rgba(0, 123, 255, 0.1);
     border-radius: 0.5rem;
     padding: 0.75rem;
     color: #007bff;
@@ -1234,17 +1247,17 @@ summary.highlight {
 }
 
 .action-card.warning .action-icon {
-    background: rgba(255,193,7,0.1);
+    background: rgba(255, 193, 7, 0.1);
     color: #ffc107;
 }
 
 .action-card.secondary .action-icon {
-    background: rgba(108,117,125,0.1);
+    background: rgba(108, 117, 125, 0.1);
     color: #6c757d;
 }
 
 .action-card.info .action-icon {
-    background: rgba(23,162,184,0.1);
+    background: rgba(23, 162, 184, 0.1);
     color: #17a2b8;
 }
 
@@ -1720,6 +1733,20 @@ summary.highlight {
     gap: 20px;
 }
 
+.modal {
+    display: none;
+    position: fixed;
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%, 0);
+    background: #fff;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);;
+    z-index: 1000;
+}
+
 .action-card {
     background: #f8f9fa;
     border: 1px solid #e9ecef;
@@ -1863,63 +1890,63 @@ summary.highlight {
         text-align: center;
         gap: 15px;
     }
-    
+
     .profile-actions {
         text-align: center;
         width: 100%;
     }
-    
+
     .action-buttons {
         justify-content: center;
         flex-wrap: wrap;
         gap: 10px;
     }
-    
+
     .quick-actions {
         grid-template-columns: 1fr;
     }
-    
+
     .action-card {
         flex-direction: column;
         text-align: center;
         gap: 1rem;
     }
-    
+
     .action-content {
         flex-direction: column;
         text-align: center;
     }
-    
+
     .content-grid {
         grid-template-columns: 1fr;
         gap: 20px;
     }
-    
+
     .stats-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 15px;
     }
-    
+
     .actions-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .form-row {
         grid-template-columns: 1fr;
     }
-    
+
     .dash-overview-grid,
     .analytics-overview-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 15px;
     }
-    
+
     .modal-content {
         width: 95%;
         margin: 10px;
         max-height: 95vh;
     }
-    
+
     .completion-indicator {
         margin-bottom: 10px;
     }
@@ -1927,26 +1954,26 @@ summary.highlight {
     .container {
         width: 95%;
     }
-    
+
     .dashboard-header {
         flex-direction: column;
         align-items: flex-start;
         gap: 15px;
     }
-    
+
     .stats-overview {
         grid-template-columns: 1fr;
         gap: 20px;
     }
-    
+
     .admin-actions {
         grid-template-columns: 1fr;
     }
-    
+
     .new-dashboard {
         padding: 15px;
     }
-    
+
     .dashboard-section {
         padding: 20px;
     }
@@ -1958,34 +1985,34 @@ summary.highlight {
         grid-template-columns: 1fr;
         gap: 10px;
     }
-    
+
     .dash-overview-grid,
     .analytics-overview-grid {
         grid-template-columns: 1fr;
         gap: 10px;
     }
-    
+
     .profile-container {
         padding: 10px;
     }
-    
+
     .student-photo,
     .company-logo {
         width: 60px;
         height: 60px;
         font-size: 1.5rem;
     }
-    
+
     .student-info h1,
     .company-info h1 {
         font-size: 1.4rem;
     }
-    
+
     .action-buttons {
         flex-direction: column;
         width: 100%;
     }
-    
+
     .action-buttons .btn {
         width: 100%;
         margin-bottom: 5px;
@@ -1996,13 +2023,17 @@ summary.highlight {
 /* ========== Internship Posting Styles ========== */
 /* ================================================ */
 
-.posting-container, .management-container, .edit-container {
+.posting-container,
+.management-container,
+.edit-container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
 }
 
-.posting-header, .management-header, .edit-header {
+.posting-header,
+.management-header,
+.edit-header {
     text-align: center;
     margin-bottom: 30px;
     padding: 30px 20px;
@@ -2012,7 +2043,8 @@ summary.highlight {
     box-shadow: 0 10px 30px rgba(0, 92, 137, 0.2);
 }
 
-.management-header, .edit-header {
+.management-header,
+.edit-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -2148,7 +2180,8 @@ summary.highlight {
 }
 
 /* Checkbox and Radio Styles */
-.checkbox-group, .radio-group {
+.checkbox-group,
+.radio-group {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -2156,7 +2189,8 @@ summary.highlight {
     width: 100%;
 }
 
-.checkbox-label, .radio-label {
+.checkbox-label,
+.radio-label {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -2188,7 +2222,8 @@ summary.highlight {
     inline-size: 15px;
 }
 
-.checkbox-label:hover, .radio-label:hover {
+.checkbox-label:hover,
+.radio-label:hover {
     border-color: #005c89;
     background-color: #f8f9fa;
 }
@@ -2626,7 +2661,8 @@ summary.highlight {
     flex-wrap: wrap;
 }
 
-.filter-group, .search-group {
+.filter-group,
+.search-group {
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -2941,56 +2977,61 @@ summary.highlight {
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .posting-container, .management-container, .edit-container {
+
+    .posting-container,
+    .management-container,
+    .edit-container {
         padding: 15px;
     }
-    
-    .management-header, .edit-header {
+
+    .management-header,
+    .edit-header {
         flex-direction: column;
         gap: 20px;
         text-align: center;
     }
-    
+
     .form-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .internships-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .progress-indicator {
         left: 15px;
         right: 15px;
         transform: none;
         min-width: auto;
     }
-    
+
     .stats-row {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .filters-form {
         flex-direction: column;
     }
-    
+
     .search-group {
         min-width: auto;
     }
-    
-    .action-buttons, .status-actions {
+
+    .action-buttons,
+    .status-actions {
         flex-direction: column;
     }
-    
+
     .step-navigation {
         flex-direction: column;
         gap: 15px;
     }
-    
+
     .step-navigation.final-step {
         flex-direction: row;
     }
-    
+
     .form-actions {
         flex-direction: column;
     }
@@ -3000,17 +3041,17 @@ summary.highlight {
     .stats-row {
         grid-template-columns: 1fr;
     }
-    
+
     .progress-steps {
         flex-wrap: wrap;
         gap: 10px;
     }
-    
+
     .progress-step {
         flex: 1;
         min-width: 80px;
     }
-    
+
     .card-header {
         flex-direction: column;
         align-items: start;
