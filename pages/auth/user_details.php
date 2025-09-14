@@ -11,7 +11,7 @@ require_once '../../includes/header.php';
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="text-center">User (Applicant) Details</h3>
+                    <h3 class="text-center">Student Details</h3>
                 </div>
                 <div class="card-body">
                     <form method="POST" action="save_user_details.php" enctype="multipart/form-data">

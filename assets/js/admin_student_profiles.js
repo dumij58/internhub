@@ -27,10 +27,20 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    function openEditModal(id, firstName, lastName) {
+    function openEditModal(id, studentId, firstName, lastName, phone, university, major, yearOfStudy, gpa, bio, skills, languages, portfolioUrl) {
         document.getElementById('edit_id').value = id;
+        document.getElementById('edit_student_id').value = studentId || '';
         document.getElementById('edit_first_name').value = firstName;
         document.getElementById('edit_last_name').value = lastName;
+        document.getElementById('edit_phone').value = phone || '';
+        document.getElementById('edit_university').value = university || '';
+        document.getElementById('edit_major').value = major || '';
+        document.getElementById('edit_year_of_study').value = yearOfStudy || '';
+        document.getElementById('edit_gpa').value = gpa || '';
+        document.getElementById('edit_bio').value = bio || '';
+        document.getElementById('edit_skills').value = skills || '';
+        document.getElementById('edit_languages').value = languages || '';
+        document.getElementById('edit_portfolio_url').value = portfolioUrl || '';
         document.getElementById('editModal').style.display = 'block';
         document.getElementById('edit_first_name').focus();
     }
@@ -38,7 +48,21 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.edit-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const row = this.closest('tr');
-            openEditModal(row.dataset.id, row.dataset.firstname, row.dataset.lastname);
+            openEditModal(
+                row.dataset.id, 
+                row.dataset.studentid,
+                row.dataset.firstname, 
+                row.dataset.lastname,
+                row.dataset.phone,
+                row.dataset.university,
+                row.dataset.major,
+                row.dataset.yearofstudy,
+                row.dataset.gpa,
+                row.dataset.bio,
+                row.dataset.skills,
+                row.dataset.languages,
+                row.dataset.portfoliourl
+            );
         });
     });
 
@@ -76,10 +100,22 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Modal close handlers
     document.getElementById('closeEditModal')?.addEventListener('click', function() {
         document.getElementById('editModal').style.display = 'none';
     });
     document.getElementById('closeAddModal')?.addEventListener('click', function() {
         document.getElementById('addModal').style.display = 'none';
+    });
+
+    // Close modals when clicking outside
+    window.addEventListener('click', function(event) {
+        const modals = ['addModal', 'editModal'];
+        modals.forEach(modalId => {
+            const modal = document.getElementById(modalId);
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
     });
 });
