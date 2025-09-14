@@ -80,8 +80,6 @@ CREATE TABLE internships (
     duration_months INT,
     salary DECIMAL(10,2) DEFAULT 0.00,
     application_deadline DATE,
-    start_date DATE,
-    end_date DATE NULL,
     max_applicants INT DEFAULT 50,
     status ENUM('draft', 'published', 'closed', 'cancelled') DEFAULT 'draft',
     remote_option BOOLEAN DEFAULT FALSE,
@@ -185,16 +183,16 @@ INSERT INTO user_types (type_name, type_description) VALUES
 -- Note: These are default passwords - CHANGE THEM AFTER FIRST LOGIN for security!
 INSERT INTO users (username, email, password_hash, user_type_id) VALUES
 ('admin', 'admin@internhub.com', '$2y$10$RINKjF.wPU.jMwzvshFe.OPnSdS2wRBBk.Soaf9NAqSHtm.HWdq3m', 1),
-('uoc', 'uoc@university.edu', '$2y$10$V.mAEYf.nNJI7iOSnUGKgu9VFM2WgfBoQsJJagG50PMKGP//xokPe', 2);
--- ('company', 'hr@company.com', '$2y$10$ZvNCGAXp7ctevkzb8hy7aepiohXDbm7fR3o/3DQzbvYfQcWvCyIWu', 3);
+('uoc', 'uoc@university.edu', '$2y$10$V.mAEYf.nNJI7iOSnUGKgu9VFM2WgfBoQsJJagG50PMKGP//xokPe', 2),
+('company', 'hr@company.com', '$2y$10$ZvNCGAXp7ctevkzb8hy7aepiohXDbm7fR3o/3DQzbvYfQcWvCyIWu', 3);
 
 -- Create Student Profile for University Representative
 INSERT INTO student_profiles (user_id, student_id, first_name, last_name, phone, university, major, year_of_study, gpa, bio) VALUES
 (2, 'UOC001', 'Default', 'Student', '+94701234567', 'University of Colombo', 'Computer Science', 3, 3.50, 'Default student account for InternHub.');
 
--- Create Company Profile for Company Representative  
--- INSERT INTO company_profiles (user_id, company_name, industry_type, company_website, company_description, address, phone_number, verified) VALUES
--- (3, 'InternHub Default Company', 'Technology', 'https://internhub.com', 'Default company account for internship management and application tracking.', '123 Main Street, Colombo 03, Sri Lanka', '+94112345678', 1);
+-- Create Company Profile for Company Representative
+INSERT INTO company_profiles (user_id, company_name, industry_type, company_website, company_description, address, phone_number, verified) VALUES
+(3, 'InternHub Default Company', 'Technology', 'https://internhub.com', 'Default company account for internship management and application tracking.', '123 Main Street, Colombo 03, Sri Lanka', '+94112345678', 1);
 
 
 -- Default Internship Categories
