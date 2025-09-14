@@ -7,7 +7,6 @@ document.addEventListener('DOMContentLoaded', function() {
     updateProgressIndicator();
     setupFormValidation();
     setupRemoteToggle();
-    setupDateValidation();
     setupStatusToggle();
     setupPreview();
 });
@@ -144,8 +143,6 @@ function validateLocationSchedule() {
     const remoteOption = document.getElementById('remote_option');
     const location = document.getElementById('location');
     const applicationDeadline = document.getElementById('application_deadline');
-    const startDate = document.getElementById('start_date');
-    const endDate = document.getElementById('end_date');
     
     let isValid = true;
     
@@ -157,25 +154,11 @@ function validateLocationSchedule() {
     
     // Date validation
     const deadlineDate = new Date(applicationDeadline.value);
-    const startDateTime = new Date(startDate.value);
     const today = new Date();
     
     if (deadlineDate <= today) {
         applicationDeadline.classList.add('error');
         isValid = false;
-    }
-    
-    if (startDateTime <= deadlineDate) {
-        startDate.classList.add('error');
-        isValid = false;
-    }
-    
-    if (endDate.value) {
-        const endDateTime = new Date(endDate.value);
-        if (endDateTime <= startDateTime) {
-            endDate.classList.add('error');
-            isValid = false;
-        }
     }
     
     return isValid;
@@ -223,39 +206,6 @@ function setupRemoteToggle() {
             locationGroup.style.opacity = '1';
             locationInput.required = true;
             locationInput.placeholder = 'e.g., Colombo, Kandy, Galle';
-        }
-    });
-}
-
-// Date validation setup
-function setupDateValidation() {
-    const applicationDeadline = document.getElementById('application_deadline');
-    const startDate = document.getElementById('start_date');
-    const endDate = document.getElementById('end_date');
-    
-    applicationDeadline.addEventListener('change', function() {
-        const deadlineDate = new Date(this.value);
-        const minStartDate = new Date(deadlineDate);
-        minStartDate.setDate(minStartDate.getDate() + 1);
-        
-        startDate.min = minStartDate.toISOString().split('T')[0];
-        
-        if (startDate.value && new Date(startDate.value) <= deadlineDate) {
-            startDate.value = '';
-        }
-    });
-    
-    startDate.addEventListener('change', function() {
-        if (this.value) {
-            const startDateTime = new Date(this.value);
-            const minEndDate = new Date(startDateTime);
-            minEndDate.setDate(minEndDate.getDate() + 7); // Minimum 1 week internship
-            
-            endDate.min = minEndDate.toISOString().split('T')[0];
-            
-            if (endDate.value && new Date(endDate.value) <= startDateTime) {
-                endDate.value = '';
-            }
         }
     });
 }
@@ -340,21 +290,21 @@ function updatePreview() {
                 ${formData.description ? `
                     <div class="preview-section">
                         <h4>About This Internship</h4>
-                        <div class="content">${formData.description.replace(/\n/g, '<br>')}</div>
+                        <div class="ps-content">${formData.description.replace(/\n/g, '<br>')}</div>
                     </div>
                 ` : ''}
                 
                 ${formData.responsibilities ? `
                     <div class="preview-section">
                         <h4>Key Responsibilities</h4>
-                        <div class="content">${formData.responsibilities.replace(/\n/g, '<br>')}</div>
+                        <div class="ps-content">${formData.responsibilities.replace(/\n/g, '<br>')}</div>
                     </div>
                 ` : ''}
                 
                 ${formData.requirements ? `
                     <div class="preview-section">
                         <h4>Requirements</h4>
-                        <div class="content">${formData.requirements.replace(/\n/g, '<br>')}</div>
+                        <div class="ps-content">${formData.requirements.replace(/\n/g, '<br>')}</div>
                     </div>
                 ` : ''}
                 
@@ -363,12 +313,6 @@ function updatePreview() {
                     <div class="application-details">
                         ${formData.application_deadline ? `
                             <p><strong>Application Deadline:</strong> ${formatDate(formData.application_deadline)}</p>
-                        ` : ''}
-                        ${formData.start_date ? `
-                            <p><strong>Start Date:</strong> ${formatDate(formData.start_date)}</p>
-                        ` : ''}
-                        ${formData.end_date ? `
-                            <p><strong>End Date:</strong> ${formatDate(formData.end_date)}</p>
                         ` : ''}
                         <p><strong>Experience Level:</strong> ${formData.experience_level ? capitalizeFirst(formData.experience_level) : 'Not specified'}</p>
                         <p><strong>Maximum Applicants:</strong> ${formData.max_applicants || '50'}</p>

@@ -144,7 +144,7 @@ require_once '../../includes/header.php';
     </div>
 
     <!-- Quick Actions -->
-    <div class="quick-actions">
+    <div class="stu-quick-actions">
         <div class="action-card highlight">
             <div class="action-content">
                 <div class="action-icon">

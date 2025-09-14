@@ -81,7 +81,7 @@ CREATE TABLE internships (
     salary DECIMAL(10,2) DEFAULT 0.00,
     application_deadline DATE,
     start_date DATE,
-    end_date DATE,
+    end_date DATE NULL,
     max_applicants INT DEFAULT 50,
     status ENUM('draft', 'published', 'closed', 'cancelled') DEFAULT 'draft',
     remote_option BOOLEAN DEFAULT FALSE,

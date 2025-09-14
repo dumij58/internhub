@@ -68,8 +68,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $duration_months = intval($_POST['duration_months']);
         $salary = floatval($_POST['salary']);
         $application_deadline = $_POST['application_deadline'];
-        $start_date = $_POST['start_date'];
-        $end_date = $_POST['end_date'];
         $max_applicants = intval($_POST['max_applicants']);
         $remote_option = isset($_POST['remote_option']) ? 1 : 0;
         $experience_level = $_POST['experience_level'];
@@ -84,22 +82,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (empty($location) && !$remote_option) $errors[] = 'Location is required for non-remote positions';
         if ($duration_months <= 0) $errors[] = 'Duration must be positive';
         if (empty($application_deadline)) $errors[] = 'Application deadline is required';
-        if (empty($start_date)) $errors[] = 'Start date is required';
         
         // Date validations - only if changing dates and internship hasn't started
-        $current_start_date = strtotime($internship['start_date']);
-        $today = time();
-        
-        if ($current_start_date > $today) { // Only validate dates if internship hasn't started
-            if (strtotime($application_deadline) <= time()) {
-                $errors[] = 'Application deadline must be in the future';
-            }
-            if (strtotime($start_date) <= strtotime($application_deadline)) {
-                $errors[] = 'Start date must be after application deadline';
-            }
-            if (!empty($end_date) && strtotime($end_date) <= strtotime($start_date)) {
-                $errors[] = 'End date must be after start date';
-            }
+        // Since start_date is removed, we only validate application deadline
+        if (strtotime($application_deadline) <= time()) {
+            $errors[] = 'Application deadline must be in the future';
         }
 
         // If has applications, restrict certain changes
@@ -119,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $sql = "UPDATE internships SET 
                     title = ?, category_id = ?, description = ?, requirements = ?, 
                     responsibilities = ?, location = ?, duration_months = ?, salary = ?, 
-                    application_deadline = ?, start_date = ?, end_date = ?, max_applicants = ?, 
+                    application_deadline = ?, max_applicants = ?, 
                     status = ?, remote_option = ?, experience_level = ?, updated_at = CURRENT_TIMESTAMP
                     WHERE id = ? AND company_id = ?";
             
@@ -127,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([
                 $title, $category_id, $description, $requirements, 
                 $responsibilities, $location, $duration_months, $salary, 
-                $application_deadline, $start_date, $end_date, $max_applicants, 
+                $application_deadline, $max_applicants, 
                 $status, $remote_option, $experience_level, $internship_id, $company_profile['id']
             ]);
 
@@ -315,25 +302,6 @@ require_once '../../includes/header.php';
                            value="<?php echo escape($_POST['application_deadline'] ?? $internship['application_deadline']); ?>" 
                            required>
                 </div>
-
-                <div class="form-group">
-                    <label for="start_date" class="form-label">Start Date *</label>
-                    <input type="date" 
-                           class="form-control" 
-                           id="start_date" 
-                           name="start_date" 
-                           value="<?php echo escape($_POST['start_date'] ?? $internship['start_date']); ?>" 
-                           required>
-                </div>
-
-                <div class="form-group">
-                    <label for="end_date" class="form-label">End Date</label>
-                    <input type="date" 
-                           class="form-control" 
-                           id="end_date" 
-                           name="end_date" 
-                           value="<?php echo escape($_POST['end_date'] ?? $internship['end_date']); ?>">
-                </div>
             </div>
         </div>
 
@@ -445,29 +413,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     updateLocationField(); // Set initial state
     remoteCheckbox.addEventListener('change', updateLocationField);
-    
-    // Date validation
-    const applicationDeadline = document.getElementById('application_deadline');
-    const startDate = document.getElementById('start_date');
-    const endDate = document.getElementById('end_date');
-    
-    applicationDeadline.addEventListener('change', function() {
-        const deadlineDate = new Date(this.value);
-        const minStartDate = new Date(deadlineDate);
-        minStartDate.setDate(minStartDate.getDate() + 1);
-        
-        startDate.min = minStartDate.toISOString().split('T')[0];
-    });
-    
-    startDate.addEventListener('change', function() {
-        if (this.value) {
-            const startDateTime = new Date(this.value);
-            const minEndDate = new Date(startDateTime);
-            minEndDate.setDate(minEndDate.getDate() + 7);
-            
-            endDate.min = minEndDate.toISOString().split('T')[0];
-        }
-    });
 });
 </script>
 

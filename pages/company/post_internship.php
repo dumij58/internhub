@@ -41,8 +41,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $duration_months = intval($_POST['duration_months']);
         $salary = floatval($_POST['salary']);
         $application_deadline = $_POST['application_deadline'];
-        $start_date = $_POST['start_date'];
-        $end_date = $_POST['end_date'];
         $max_applicants = intval($_POST['max_applicants']);
         $remote_option = isset($_POST['remote_option']) ? 1 : 0;
         $experience_level = $_POST['experience_level'];
@@ -57,17 +55,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (empty($location) && !$remote_option) $errors[] = 'Location is required for non-remote positions';
         if ($duration_months <= 0) $errors[] = 'Duration must be positive';
         if (empty($application_deadline)) $errors[] = 'Application deadline is required';
-        if (empty($start_date)) $errors[] = 'Start date is required';
 
         // Date validations
         if (strtotime($application_deadline) <= time()) {
             $errors[] = 'Application deadline must be in the future';
-        }
-        if (strtotime($start_date) <= strtotime($application_deadline)) {
-            $errors[] = 'Start date must be after application deadline';
-        }
-        if (!empty($end_date) && strtotime($end_date) <= strtotime($start_date)) {
-            $errors[] = 'End date must be after start date';
         }
 
         if (empty($errors)) {
@@ -75,9 +66,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $sql = "INSERT INTO internships (
                 title, company_id, category_id, description, requirements, 
                 responsibilities, location, duration_months, salary, 
-                application_deadline, start_date, end_date, max_applicants, 
+                application_deadline, max_applicants, 
                 status, remote_option, experience_level, created_by
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             $stmt = $db->prepare($sql);
             $stmt->execute([
@@ -91,8 +82,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $duration_months,
                 $salary,
                 $application_deadline,
-                $start_date,
-                $end_date,
                 $max_applicants,
                 $status,
                 $remote_option,
@@ -296,27 +285,7 @@ require_once '../../includes/header.php';
                         required>
                 </div>
 
-                <div class="form-group">
-                    <label for="start_date" class="form-label">Start Date *</label>
-                    <input type="date"
-                        class="form-control"
-                        id="start_date"
-                        name="start_date"
-                        value="<?php echo escape($_POST['start_date'] ?? ''); ?>"
-                        required>
-                </div>
 
-                <div class="form-group">
-                    <label for="end_date" class="form-label">
-                        End Date
-                        <small>Optional - leave blank for flexible duration</small>
-                    </label>
-                    <input type="date"
-                        class="form-control"
-                        id="end_date"
-                        name="end_date"
-                        value="<?php echo escape($_POST['end_date'] ?? ''); ?>">
-                </div>
             </div>
 
             <div class="step-navigation">

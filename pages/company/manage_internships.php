@@ -310,8 +310,6 @@ require_once '../../includes/header.php';
                             <div class="dates-info">
                                 <small>
                                     <strong>Deadline:</strong> <?php echo date('M j, Y', strtotime($internship['application_deadline'])); ?>
-                                    <br>
-                                    <strong>Start:</strong> <?php echo date('M j, Y', strtotime($internship['start_date'])); ?>
                                 </small>
                             </div>
                         </div>

@@ -177,9 +177,6 @@ require_once '../../includes/header.php';
                     <div class="detail-content">
                         <h3>Duration</h3>
                         <p><?php echo $internship['duration_months']; ?> months</p>
-                        <?php if ($internship['start_date']): ?>
-                            <small>Starts <?php echo date('M j, Y', strtotime($internship['start_date'])); ?></small>
-                        <?php endif; ?>
                     </div>
                 </div>
 

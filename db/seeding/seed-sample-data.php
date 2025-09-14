@@ -178,19 +178,17 @@ try {
         $salary = rand(0, 1) ? rand(15000, 50000) : null; // Some internships have salary, others don't
         
         $applicationDeadline = randomDateOnly('2025-09-01', '2025-12-31');
-        $startDate = randomDateOnly('2025-10-01', '2026-01-31');
-        $endDate = date('Y-m-d', strtotime($startDate . " + {$durationMonths} months"));
         $created_at = randomDate('2024-06-01', '2025-08-31');
         
         $stmt = $db->prepare("
             INSERT INTO internships (title, company_id, category_id, description, requirements, responsibilities, 
-                                   location, duration_months, salary, application_deadline, start_date, end_date, 
+                                   location, duration_months, salary, application_deadline,
                                    max_applicants, status, remote_option, experience_level, created_by, created_at) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
         $stmt->execute([
             $title, $companyId, $categoryId, $description, $requirements, $responsibilities,
-            $location, $durationMonths, $salary, $applicationDeadline, $startDate, $endDate,
+            $location, $durationMonths, $salary, $applicationDeadline,
             $maxApplicants, $status, $remoteOption, $experienceLevel, $createdBy, $created_at
         ]);
         $internshipIds[] = $db->lastInsertId();

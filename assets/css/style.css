@@ -576,6 +576,18 @@ form p a {
     border-color: rgb(125, 125, 125);
 }
 
+.btn-secondary:hover {
+    color: #fff;
+    background-color: rgb(101, 101, 101);
+    border-color: rgb(101, 101, 101);
+}
+
+.btn-secondary {
+    color: #fff;
+    background-color: rgb(125, 125, 125);
+    border-color: rgb(125, 125, 125);
+}
+
 .btn-danger {
     color: rgb(155, 6, 6);
     background-color: rgba(0, 0, 0, 0);
@@ -586,6 +598,30 @@ form p a {
     color: #fff;
     background-color: rgb(155, 6, 6);
     border-color: rgb(155, 6, 6);
+}
+
+.btn-success {
+    color: #fff;
+    background-color: rgb(2, 137, 0);
+    border-color: rgb(2, 137, 0);
+}
+
+.btn-success:hover {
+    color: rgb(2, 102, 0);
+    background-color: #fff;
+    border-color: rgb(2, 102, 0);
+}
+
+.btn-warning {
+    color: #000;
+    background-color: #ffc107;
+    border-color: #ffc107;
+}
+
+.btn-warning:hover {
+    color: #000;
+    background-color: #ebb000;   
+    border-color: #ebb000;
 }
 
 .btn-lg {
@@ -1156,10 +1192,17 @@ summary.highlight {
 /* Quick Actions Styles */
 .quick-actions {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 1.5rem;
     margin-bottom: 2rem;
 }
+
+.stu-quick-actions {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    margin-bottom: 2rem;
+}
+
 
 .action-card {
     background: white;
@@ -1902,10 +1945,6 @@ summary.highlight {
         gap: 10px;
     }
 
-    .quick-actions {
-        grid-template-columns: 1fr;
-    }
-
     .action-card {
         flex-direction: column;
         text-align: center;
@@ -2405,10 +2444,6 @@ summary.highlight {
     color: #005c89;
 }
 
-.preview-section {
-    margin-bottom: 25px;
-}
-
 .preview-section h4 {
     color: #333;
     font-size: 1.1rem;
@@ -2551,6 +2586,11 @@ summary.highlight {
 .action-card.secondary:hover {
     border-color: #6c757d;
     background: linear-gradient(135deg, #ffffff 0%, rgba(108, 117, 125, 0.02) 100%);
+}
+
+.ps-content {
+    padding: 20px;
+    margin-bottom: 10px;
 }
 
 .action-icon {
@@ -3168,7 +3208,7 @@ summary.highlight {
     font-weight: 600;
     padding: 12px 8px;
     border-bottom: 2px solid #dee2e6;
-    text-align: left;
+    text-align: centeqr;
     color: #495057;
 }
 
